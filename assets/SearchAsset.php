@@ -13,12 +13,11 @@ class SearchAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
-        'css/AdminLTE.min.css',
-        'css/skin-blue-min.css'
+        'css/site.css',
     ];
     public $js = [
     ];
     public $depends = [
-        'yii\bootstrap\BootstrapAsset',
+        'app\assets\AdminAsset',
     ];
 }
