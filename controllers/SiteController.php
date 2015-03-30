@@ -23,6 +23,11 @@ class SiteController extends Controller
     {
 
         $attributes = $client->getUserAttributes();
+        var_dump($attributes);die;
+
+        //var_dump($attributes);die;
+
+        //var_dump($attributes);die();
 
         /** @var Auth $auth */
         $auth = User::find()->where([
@@ -35,7 +40,8 @@ class SiteController extends Controller
         } else {
             $user = new User([
                 'source' => $client->getId(),
-                'source_id' => (string)$attributes['id']
+                'source_id' => (string)$attributes['id'],
+                'photo' => isset($attributes['photo']) ? $attributes['photo'] : NULL,
             ]);
             if ($user->save()) {
                 Yii::$app->user->login($user);

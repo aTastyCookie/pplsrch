@@ -16,6 +16,7 @@ class SearchAsset extends AssetBundle
         'css/site.css',
     ];
     public $js = [
+        'js/custom.js',
     ];
     public $depends = [
         'app\assets\AdminAsset',

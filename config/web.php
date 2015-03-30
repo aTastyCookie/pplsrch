@@ -65,8 +65,15 @@ $config = [
                     'class' => 'yii\authclient\clients\VKontakte',
                     'clientId' => '4845041',
                     'clientSecret' => '5J3vGkexmhBGqvg9CF4f',
-                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte'
+                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
+                    'scope' => 'friends'
                 ],
+                'facebook' => [
+                    'class' => 'yii\authclient\clients\Facebook',
+                    'clientId' => '803296753079112',
+                    'clientSecret' => '029a8d2cccc3330261ee7fdc28b7b1aa',
+                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=facebook'
+                ]
             ],
         ],
         'db' => require(__DIR__ . '/db.php'),
