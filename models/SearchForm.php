@@ -7,9 +7,14 @@ use yii\base\Model;
 
 class SearchForm extends Model
 {
-    public $firstname;
-    public $lastname;
-    public $phone;
+    public $q;
+
+    public function attributeLabels()
+    {
+        return [
+            'q' => 'Search query:',
+        ];
+    }
 
 }
 

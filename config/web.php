@@ -50,29 +50,35 @@ $config = [
         'authClientCollection' => [
             'class' => 'yii\authclient\Collection',
             'clients' => [
-                /*'google' => [
+                'google' => [
                     'class' => 'yii\authclient\clients\GoogleOAuth',
-                    'clientId' => 'google_client_id',
-                    'clientSecret' => 'google_client_secret',
+                    'clientId' => 'responsive-ray-90112',
+                    'clientSecret' => '17017104160',
+                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=google',
                 ],
-                'facebook' => [
-                    'class' => 'yii\authclient\clients\Facebook',
-                    'clientId' => '803296753079112',
-                    'clientSecret' => 'facebook_client_secret',
-                    'returnUrl' => 'http://pplsrch.localhost'
-                ],*/
+                'twitter' => [
+                    'class' => 'app\components\authclient\clients\PSTwitter',
+                    'consumerKey' => 'LxvEt937RYA4iN9Mn8gToacwz',
+                    'consumerSecret' => 'N8hFBG9CTun9h6b8xiJG4wT8FFntulsfQ018QC6v6OWA8NuHHe',
+                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=twitter',
+                ],
+                'linkedin' => [
+                    'class' => 'app\components\authclient\clients\PSLinkedIn',
+                    'clientId' => '77b9xleimd4wy0',
+                    'clientSecret' => '6moaGW5HNgVvjBBv',
+                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=linkedin'
+                ],
                 'vkontakte' => [
-                    'class' => 'yii\authclient\clients\VKontakte',
+                    'class' => 'app\components\authclient\clients\PSVKontakte',
                     'clientId' => '4845041',
                     'clientSecret' => '5J3vGkexmhBGqvg9CF4f',
                     'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
                     'scope' => 'friends'
                 ],
                 'facebook' => [
-                    'class' => 'yii\authclient\clients\Facebook',
+                    'class' => 'app\components\authclient\clients\PSFacebook',
                     'clientId' => '803296753079112',
                     'clientSecret' => '029a8d2cccc3330261ee7fdc28b7b1aa',
-                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=facebook'
                 ]
             ],
         ],

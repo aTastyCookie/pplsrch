@@ -22,7 +22,10 @@ class SiteController extends Controller
     public function onAuthSuccess($client)
     {
 
+        $token = $client->getAccessToken()->getToken();
+
         $attributes = $client->getUserAttributes();
+
         var_dump($attributes);die;
 
         //var_dump($attributes);die;
@@ -42,6 +45,8 @@ class SiteController extends Controller
                 'source' => $client->getId(),
                 'source_id' => (string)$attributes['id'],
                 'photo' => isset($attributes['photo']) ? $attributes['photo'] : NULL,
+                'name' => $attributes['name'] ? $attributes['name'] : NULL,
+                'access_token' => $token
             ]);
             if ($user->save()) {
                 Yii::$app->user->login($user);

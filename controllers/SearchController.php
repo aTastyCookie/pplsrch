@@ -7,6 +7,8 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use app\models\SearchForm;
 use yii\authclient\clients\VKontakte;
+use yii\authclient\clients\Facebook;
+use yii\authclient\OAuthToken;
 
 class SearchController extends Controller
 {
@@ -43,11 +45,24 @@ class SearchController extends Controller
     {
         $request = Yii::$app->request;
         $post = $request->post();
+        $q = $post['q'];
 
-        $vk = new VKontakte();
+        $user = Yii::$app->user->getIdentity();
 
-        $wall = $vk->api('wall.get', 'GET');
-        var_dump($wall);
+        //$vk = new VKontakte();
+
+        //$res = $vk->api('users.search', 'GET', ['q' => $q, 'fields' => 'contacts, photo_50']);
+        //var_dump($res);
+
+        $fb = new Facebook();
+
+        $token = new OAuthToken();
+        $token->setToken($user->access_token);
+
+        $fb->setAccessToken($token);
+
+        $res = $fb->api('search/?q=' . $q . '&type=user', 'GET');
+        var_dump($res);
 
         /*$request = Yii::$app->request;
         $post = $request->post();*/

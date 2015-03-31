@@ -12,6 +12,7 @@ class AdminAsset extends AssetBundle
         'dist/css/skins/skin-blue.min.css',
     ];
     public $js = [
+        'dist/js/app.min.js'
     ];
     public $depends = [
         'yii\bootstrap\BootstrapPluginAsset',
