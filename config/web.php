@@ -14,14 +14,10 @@ $config = [
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
-        /*'urlManager' => [
+        'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'enableStrictParsing' => false,
-            'rules' => [
-                // ...
-            ],
-        ],*/
+        ],
         'user' => [
             'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
@@ -54,24 +50,28 @@ $config = [
                     'class' => 'yii\authclient\clients\GoogleOAuth',
                     'clientId' => 'responsive-ray-90112',
                     'clientSecret' => '17017104160',
-                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=google',
+                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=google',
+                    'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=google',
                 ],
                 'twitter' => [
                     'class' => 'app\components\authclient\clients\PSTwitter',
                     'consumerKey' => 'LxvEt937RYA4iN9Mn8gToacwz',
                     'consumerSecret' => 'N8hFBG9CTun9h6b8xiJG4wT8FFntulsfQ018QC6v6OWA8NuHHe',
-                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=twitter',
+                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=twitter',
+                    'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=twitter',
                 ],
                 'linkedin' => [
                     'class' => 'app\components\authclient\clients\PSLinkedIn',
                     'clientId' => '77b9xleimd4wy0',
                     'clientSecret' => '6moaGW5HNgVvjBBv',
-                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=linkedin'
+                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=linkedin'
+                    'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site/auth&authclient=linkedin',
                 ],
                 'vkontakte' => [
                     'class' => 'app\components\authclient\clients\PSVKontakte',
                     'clientId' => '4845041',
                     'clientSecret' => '5J3vGkexmhBGqvg9CF4f',
+                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
                     'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
                     'scope' => 'friends'
                 ],

@@ -26,7 +26,7 @@ class SiteController extends Controller
 
         $attributes = $client->getUserAttributes();
 
-        var_dump($attributes);die;
+        //var_dump($attributes);die;
 
         //var_dump($attributes);die;
 
