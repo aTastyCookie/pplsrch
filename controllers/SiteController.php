@@ -15,13 +15,16 @@ class SiteController extends Controller
             'auth' => [
                 'class' => 'yii\authclient\AuthAction',
                 'successCallback' => [$this, 'onAuthSuccess'],
+                'as register' => [
+                    'class' => 'app\components\RegistrationBehavior',
+                ],
             ],
         ];
     }
 
     public function onAuthSuccess($client)
     {
-
+        var_dump($test);die();
         $token = $client->getAccessToken()->getToken();
 
         $attributes = $client->getUserAttributes();
@@ -33,7 +36,8 @@ class SiteController extends Controller
         //var_dump($attributes);die();
 
         /** @var Auth $auth */
-        $auth = User::find()->where([
+        
+        $auth = Auth::find()->where([
             'source' => $client->getId(),
             'source_id' => $attributes['id'],
         ])->one();
@@ -42,14 +46,24 @@ class SiteController extends Controller
             Yii::$app->user->login($auth);
         } else {
             $user = new User([
-                'source' => $client->getId(),
-                'source_id' => (string)$attributes['id'],
                 'photo' => isset($attributes['photo']) ? $attributes['photo'] : NULL,
                 'name' => $attributes['name'] ? $attributes['name'] : NULL,
-                'access_token' => $token
+                'email' => $attributes['email'],
             ]);
+            $transaction = $user->getDb()->beginTransaction();
             if ($user->save()) {
-                Yii::$app->user->login($user);
+                $auth = new Auth([
+                    'user_id' => $user->id,
+                    'source' => $client->getId(),
+                    'source_id' => (string)$attributes['id'],
+                    'access_token' => $token,
+                ]);
+                if ($auth->save()) {
+                    $transaction->commit();
+                    Yii::$app->user->login($user);
+                } else {
+                    print_r($auth->getErrors());
+                }
             } else {
                 print_r($auth->getErrors());
             }
@@ -113,6 +127,15 @@ class SiteController extends Controller
                 $auth->save();
             }
         }*/
+    }
+
+    public function actionLogin()
+    {
+        $client = Yii::$app->request->get('client');
+        $error = Yii::$app->request->get('error');
+        if ($error) {
+            var_dump('Нет учетной записи $client');die();
+        }
     }
     
 	public function actionIndex()

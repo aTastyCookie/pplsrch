@@ -4,18 +4,7 @@ namespace app\models;
 
 use yii\db\ActiveRecord;
 
-class Auth extends ActiveRecord {
-    
-    public $user = 'Test';
-    /*public $id;
-    public $user_id;
-    public $source;
-    public $source_id;
-
-    public static function tableName()
-    {
-        return 'auth';
-    }*/ 
+class Auth extends ActiveRecord { 
 
     public function getUser()
     {

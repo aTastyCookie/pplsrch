@@ -14,10 +14,10 @@ $config = [
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
-        'urlManager' => [
+        /*'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-        ],
+        ],*/
         'user' => [
             'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
@@ -47,11 +47,11 @@ $config = [
             'class' => 'yii\authclient\Collection',
             'clients' => [
                 'google' => [
-                    'class' => 'yii\authclient\clients\GoogleOAuth',
-                    'clientId' => 'responsive-ray-90112',
-                    'clientSecret' => '17017104160',
+                    'class' => 'app\components\authclient\clients\PSGoogleOAuth',
+                    'clientId' => '17017104160-jdl67k3sm97psn76n1201gbs9nbuupoe.apps.googleusercontent.com',
+                    'clientSecret' => 'RFQjn_pRbIHYEBGdVFc8PrX3',
                     //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=google',
-                    'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=google',
+                    //'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=google',
                 ],
                 'twitter' => [
                     'class' => 'app\components\authclient\clients\PSTwitter',
@@ -69,16 +69,28 @@ $config = [
                 ],
                 'vkontakte' => [
                     'class' => 'app\components\authclient\clients\PSVKontakte',
-                    'clientId' => '4845041',
-                    'clientSecret' => '5J3vGkexmhBGqvg9CF4f',
-                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
+                    /*People Search*/
+                    //'clientId' => '4845041',
+                    //'clientSecret' => '5J3vGkexmhBGqvg9CF4f',
+                    //'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site/auth&authclient=vkontakte',
+                    
+                    /*People Search Dev*/
+                    'clientId' => '4859604',
+                    'clientSecret' => 'Scw6dBG9zVqPKwC4ykrK',
                     'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
-                    'scope' => 'friends'
+                    'scope' => 'friends',
                 ],
                 'facebook' => [
                     'class' => 'app\components\authclient\clients\PSFacebook',
-                    'clientId' => '803296753079112',
-                    'clientSecret' => '029a8d2cccc3330261ee7fdc28b7b1aa',
+                    /*People Search*/
+                    //'clientId' => '803296753079112',
+                    //'clientSecret' => '029a8d2cccc3330261ee7fdc28b7b1aa',
+                    //'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=facebook',
+
+                    /*People Search Dev*/
+                    'clientId' => '883568988361551',
+                    'clientSecret' => '75d3ea44742dfabbabc8e9fd17044e10',
+                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=facebook',
                 ]
             ],
         ],
