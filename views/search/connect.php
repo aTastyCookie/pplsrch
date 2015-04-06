@@ -53,15 +53,41 @@ use yii\widgets\ActiveForm;
       </aside>
       <div class="content-wrapper">
           <section class="content">
-              <?php
-
-              $form = ActiveForm::begin([
-                  'method' => 'post',
-                  'action' => ['search/vk']
-              ]); ?>
-              <?= $form->field($formModel, 'q')->textInput(['name' => 'q']) ?>
-              <?= Html::submitButton('Search', ['class' => 'btn btn-primary search']) ?>
-              <?php ActiveForm::end() ?>
+              <span><b>Facebook:</b></span>
+              <?php if (array_key_exists('facebook', $socials)) { ?>
+                  &nbsp;connected
+              <?php } else { ?>
+                  <a href="<?= Url::toRoute(['auth', 'authclient' => 'facebook']); ?>  ">connect</a>  
+              <?php } ?>
+              <br /><br />
+              <span><b>Twitter:</b></span>
+              <?php if (array_key_exists('twitter', $socials)) { ?>
+                  &nbsp;connected
+              <?php } else { ?>
+                  <a href="<?= Url::toRoute(['auth', 'authclient' => 'twitter']); ?>  ">connect</a>  
+              <?php } ?>
+              <br /><br />
+              <span><b>VK:</b></span>
+              <?php if (array_key_exists('vkontakte', $socials)) { ?>
+                  &nbsp;connected
+              <?php } else { ?>
+                  <a href="<?= Url::toRoute(['auth', 'authclient' => 'vkontakte']); ?>  ">connectь</a>  
+              <?php } ?>
+              <br /><br />
+              <span><b>Google+:</b></span>
+              <?php if (array_key_exists('google', $socials)) { ?>
+                  &nbsp;connected
+              <?php } else { ?>
+                  <a href="<?= Url::toRoute(['auth', 'authclient' => 'gplus']); ?>  ">connect</a>  
+              <?php } ?>
+              <br /><br />
+              <span><b>LinkedIn:</b></span>
+              <?php if (array_key_exists('linkedin', $socials)) { ?>
+                  &nbsp;connected
+              <?php } else { ?>
+                  <a href="<?= Url::toRoute(['auth', 'authclient' => 'linkedin']); ?>  ">connect</a>  
+              <?php } ?>
+              <br /><br />
           </section>
       </div>
       <!-- Left side column. contains the logo and sidebar -->

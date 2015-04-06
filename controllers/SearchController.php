@@ -9,6 +9,7 @@ use app\models\SearchForm;
 use yii\authclient\clients\VKontakte;
 use yii\authclient\clients\Facebook;
 use yii\authclient\OAuthToken;
+use app\models\Auth;
 
 class SearchController extends Controller
 {
@@ -21,12 +22,40 @@ class SearchController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'actions' => ['index', 'vk'],
+                        'actions' => ['index', 'vk', 'connect', 'auth'],
                         'roles' => ['@'],
                     ],
                 ]
             ],
         ];
+    }
+
+    public function actions()
+    {
+        return [
+            'auth' => [
+                'class' => 'yii\authclient\AuthAction',
+                'successCallback' => [$this, 'onAuthSuccessConnect'],
+            ],
+        ];
+    }
+
+    public function onAuthSuccessConnect($client)
+    {
+
+        $user = Yii::$app->user->getIdentity();
+
+        $token = $client->getAccessToken()->getToken();
+        $attributes = $client->getUserAttributes();
+
+        $auth = new Auth([
+            'user_id' => $user->id,
+            'source' => $client->getId(),
+            'source_id' => (string)$attributes['id'],
+            'access_token' => $token,
+        ]);
+
+        $auth->save();        
     }
 
 	public function actionIndex()
@@ -40,6 +69,31 @@ class SearchController extends Controller
             'user' => $user
         ]);
 	}
+
+    public function actionConnect()
+    {
+        $user = Yii::$app->user->getIdentity();
+
+        $auths = Auth::find()->where([
+            'user_id' => $user->id,
+        ])->all();
+
+        foreach ($auths as $auth) {
+            $socials[$auth->source] = $auth;
+        }
+
+
+
+        return $this->render('connect', [
+            'user' => $user,
+            'socials' => $socials,
+        ]);
+    }
+
+    public function actionConnectAccount()
+    {
+
+    }
 
     public function actionVk()
     {

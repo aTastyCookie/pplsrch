@@ -81,7 +81,8 @@ class SiteController extends Controller
         ])->one();
 
         if ($auth) {
-            Yii::$app->user->login($auth);
+            $user = $auth->getUser();
+            Yii::$app->user->login($user);
         } else {
             return $this->redirect(['site/index', 'need_reg' => '1']);
         }

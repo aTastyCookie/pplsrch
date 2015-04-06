@@ -54,11 +54,17 @@ $config = [
                     //'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=google',
                 ],
                 'twitter' => [
+                    /*People Search*/
+                    //'class' => 'app\components\authclient\clients\PSTwitter',
+                    //'consumerKey' => 'LxvEt937RYA4iN9Mn8gToacwz',
+                    //'consumerSecret' => 'N8hFBG9CTun9h6b8xiJG4wT8FFntulsfQ018QC6v6OWA8NuHHe',
+                    //'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=twitter',
+                    /*People Search Dev*/
                     'class' => 'app\components\authclient\clients\PSTwitter',
-                    'consumerKey' => 'LxvEt937RYA4iN9Mn8gToacwz',
-                    'consumerSecret' => 'N8hFBG9CTun9h6b8xiJG4wT8FFntulsfQ018QC6v6OWA8NuHHe',
-                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=twitter',
-                    'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=twitter',
+                    'consumerKey' => 'kpfH4A5jb3NxME4c6Qn7v5cTs',
+                    'consumerSecret' => 'gjRxqQnHjH7pLYKICAW8n3APekJ3mtKtngX4La9I6jL1U8jK8B',
+                    //'returnUrl' => 'http://dev.pplsrch.in/index.php?r=site%2Fauth&authclient=twitter',
+
                 ],
                 'linkedin' => [
                     'class' => 'app\components\authclient\clients\PSLinkedIn',
@@ -77,7 +83,7 @@ $config = [
                     /*People Search Dev*/
                     'clientId' => '4859604',
                     'clientSecret' => 'Scw6dBG9zVqPKwC4ykrK',
-                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
+                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site/auth&authclient=vkontakte',
                     'scope' => 'friends',
                 ],
                 'facebook' => [
