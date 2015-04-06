@@ -78,7 +78,7 @@ use yii\widgets\ActiveForm;
               <?php if (array_key_exists('google', $socials)) { ?>
                   &nbsp;connected
               <?php } else { ?>
-                  <a href="<?= Url::toRoute(['auth', 'authclient' => 'gplus']); ?>  ">connect</a>  
+                  <a href="<?= Url::toRoute(['auth', 'authclient' => 'google']); ?>  ">connect</a>  
               <?php } ?>
               <br /><br />
               <span><b>LinkedIn:</b></span>

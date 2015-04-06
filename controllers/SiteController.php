@@ -158,6 +158,10 @@ class SiteController extends Controller
     
 	public function actionIndex()
     {
+        $user = Yii::$app->user;
+        if (!$user->isGuest) {
+            return $this->redirect(['search/index']);
+        }
         $registered = FALSE;
         $needRegistration = FALSE;
 
