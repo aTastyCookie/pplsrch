@@ -7,39 +7,6 @@ use yii\web\IdentityInterface;
 
 class User extends ActiveRecord implements IdentityInterface
 {
-
-    /*public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;*/
-
-
-    /*private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];*/
-
-    /**
-     * @inheritdoc
-     */
-    /*public static function findIdentity($id)
-    {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
-    }*/
-
     /**
      * @inheritdoc
      */
@@ -47,26 +14,6 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return static::findOne($id);
     }
-
-    /*public static function findIdentityByAccessToken($token, $type = null)
-    {
-        return static::findOne(['access_token' => $token]);
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function getAuthKey()
-    {
-        return $this->authKey;
-    }
-
-    public function validateAuthKey($authKey)
-    {
-        return $this->authKey === $authKey;
-    }*/
 
     /**
      * @inheritdoc
@@ -132,5 +79,18 @@ class User extends ActiveRecord implements IdentityInterface
     public function validatePassword($password)
     {
         return $this->password === $password;
+    }
+
+    public function getConnectedClients()
+    {
+        $clients = Auth::find()->where([
+            'user_id' => $this->id,
+        ])->all();
+
+        if (!count($clients)) {
+            return FALSE;
+        }
+
+        return $clients;
     }
 }

@@ -61,6 +61,22 @@ class SearchController extends Controller
 	public function actionIndex()
 	{
         $user = Yii::$app->user->getIdentity();
+        $request = Yii::$app->request;
+        if ($request->isPost) {
+            $q = $request->post('q');
+
+            $connectedClients = $user->getConnectedClients();
+            
+            if ($connectedClients) {
+                $result = $this->search($connectedClients, $q);
+            }
+
+
+            $fb = new Facebook();
+
+            
+            //$this->searchFb($q);
+        }
 
         $form = new SearchForm();
 
@@ -95,28 +111,79 @@ class SearchController extends Controller
 
     }
 
-    public function actionVk()
+    public function search($clients, $query)
     {
-        $request = Yii::$app->request;
-        $post = $request->post();
-        $q = $post['q'];
+        $results = array();
+        foreach ($clients as $client) {
+            $results = array_merge($results, $this->searchInsideClient($client, $query));
+        }      
+        die();
+    }
+
+    public function searchInsideClient($client, $query)
+    {
+        switch ($client->getSource()) {
+            case 'vkontakte':
+                $clientOAuth = new VKontakte();
+                break;
+
+            case 'facebook':
+                $clientOAuth = new Facebook();
+                break;
+
+            case 'google':
+                $clientOAuth = new GoogleOAuth();
+                break;
+
+            case 'twitter':
+                $clientOAuth = new Twitter();
+                break;
+
+            case 'linkedin':
+                $clientOAuth = new LinkedIn();
+                break;
+        }
+
+        if (is_object($clientOAuth)) {
+            $token = new OAuthToken();
+            $token->setToken($client->access_token);
+            $clientOAuth->setAccessToken($token);
+            //$res = $clientOAuth->api('search/?q=' . $query . '&type=user', 'GET');
+            $res = $clientOAuth->api('search/', 'GET', ['q' => $query, 'type' => 'user']);
+            var_dump($res);
+        } 
+
+        return array();
+    }
+
+    public function searchFb($q)
+    {
 
         $user = Yii::$app->user->getIdentity();
+        $auth = Auth::find()->where([
+            'source' => 'facebook',
+            'user_id' => $user->id,
+        ])->one();
 
-        //$vk = new VKontakte();
+        /*$vk = new VKontakte();
 
-        //$res = $vk->api('users.search', 'GET', ['q' => $q, 'fields' => 'contacts, photo_50']);
-        //var_dump($res);
+        $token = new OAuthToken();
+        $token->setToken($auth->access_token);
+
+        $vk->setAccessToken($token);
+
+        $res = $vk->api('users.search', 'GET', ['q' => $q, 'fields' => 'contacts, photo_50']);
+        var_dump($res);*/
 
         $fb = new Facebook();
 
         $token = new OAuthToken();
-        $token->setToken($user->access_token);
+        $token->setToken($auth->access_token);
 
         $fb->setAccessToken($token);
 
         $res = $fb->api('search/?q=' . $q . '&type=user', 'GET');
-        var_dump($res);
+        var_dump($res);die();
 
         /*$request = Yii::$app->request;
         $post = $request->post();*/

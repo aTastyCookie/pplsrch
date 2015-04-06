@@ -4,8 +4,8 @@ namespace app\models;
 
 use yii\db\ActiveRecord;
 
-class Auth extends ActiveRecord { 
-
+class Auth extends ActiveRecord 
+{
     public function getUser()
     {
         $user = User::find()->where([
@@ -13,5 +13,10 @@ class Auth extends ActiveRecord {
         ])->one();
 
         return $user;
+    }
+
+    public function getSource()
+    {
+        return $this->source;
     }
 }

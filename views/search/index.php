@@ -57,7 +57,7 @@ use yii\widgets\ActiveForm;
 
               $form = ActiveForm::begin([
                   'method' => 'post',
-                  'action' => ['search/vk']
+                  'action' => ['search/index']
               ]); ?>
               <?= $form->field($formModel, 'q')->textInput(['name' => 'q']) ?>
               <?= Html::submitButton('Search', ['class' => 'btn btn-primary search']) ?>
