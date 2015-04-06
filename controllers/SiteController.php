@@ -15,35 +15,26 @@ class SiteController extends Controller
             'auth' => [
                 'class' => 'yii\authclient\AuthAction',
                 'successCallback' => [$this, 'onAuthSuccess'],
-                'as register' => [
-                    'class' => 'app\components\RegistrationBehavior',
-                ],
             ],
+            'authreg' => [
+                'class' => 'yii\authclient\AuthAction',
+                'successCallback' => [$this, 'onAuthRegSuccess'],
+            ]
         ];
     }
 
-    public function onAuthSuccess($client)
-    {
-        var_dump($test);die();
-        $token = $client->getAccessToken()->getToken();
+    public function onAuthRegSuccess($client) {
 
+        $token = $client->getAccessToken()->getToken();
         $attributes = $client->getUserAttributes();
 
-        //var_dump($attributes);die;
-
-        //var_dump($attributes);die;
-
-        //var_dump($attributes);die();
-
-        /** @var Auth $auth */
-        
         $auth = Auth::find()->where([
             'source' => $client->getId(),
             'source_id' => $attributes['id'],
         ])->one();
 
         if ($auth) {
-            Yii::$app->user->login($auth);
+            return $this->redirect(['site/index', 'reg' => '1']);
         } else {
             $user = new User([
                 'photo' => isset($attributes['photo']) ? $attributes['photo'] : NULL,
@@ -67,6 +58,32 @@ class SiteController extends Controller
             } else {
                 print_r($auth->getErrors());
             }
+        }
+    }
+
+    public function onAuthSuccess($client)
+    {
+        $token = $client->getAccessToken()->getToken();
+
+        $attributes = $client->getUserAttributes();
+
+        //var_dump($attributes);die;
+
+        //var_dump($attributes);die;
+
+        //var_dump($attributes);die();
+
+        /** @var Auth $auth */
+        
+        $auth = Auth::find()->where([
+            'source' => $client->getId(),
+            'source_id' => $attributes['id'],
+        ])->one();
+
+        if ($auth) {
+            Yii::$app->user->login($auth);
+        } else {
+            return $this->redirect(['site/index', 'need_reg' => '1']);
         }
 
 
@@ -140,7 +157,21 @@ class SiteController extends Controller
     
 	public function actionIndex()
     {
-        return $this->render('index');
+        $registered = FALSE;
+        $needRegistration = FALSE;
+
+        $get = Yii::$app->request->get();
+        if (isset($get['reg'])) {
+            $registered = TRUE;
+        }
+        if (isset($get['need_reg'])) {
+            $needRegistration = TRUE;
+        }
+
+        return $this->render('index', [
+            'registered' => $registered,
+            'needRegistration' => $needRegistration
+        ]);
     }
 
     public function actionLogout()

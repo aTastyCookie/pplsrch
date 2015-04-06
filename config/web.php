@@ -90,7 +90,7 @@ $config = [
                     /*People Search Dev*/
                     'clientId' => '883568988361551',
                     'clientSecret' => '75d3ea44742dfabbabc8e9fd17044e10',
-                    'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=facebook',
+                    //'returnUrl' => 'http://pplsrch.localhost/index.php?r=site%2Fauth&authclient=facebook',
                 ]
             ],
         ],
