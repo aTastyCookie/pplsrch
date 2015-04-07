@@ -6,8 +6,9 @@ use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use app\models\SearchForm;
-use yii\authclient\clients\VKontakte;
-use yii\authclient\clients\Facebook;
+use app\components\authclient\clients\PSVKontakte;
+use app\components\authclient\clients\PSFacebook;
+use app\components\authclient\clients\PSTwitter;
 use yii\authclient\OAuthToken;
 use app\models\Auth;
 
@@ -46,6 +47,7 @@ class SearchController extends Controller
         $user = Yii::$app->user->getIdentity();
 
         $token = $client->getAccessToken()->getToken();
+        $tokenSecret = $client->getAccessToken()->getTokenSecret();
         $attributes = $client->getUserAttributes();
 
         $auth = new Auth([
@@ -53,6 +55,7 @@ class SearchController extends Controller
             'source' => $client->getId(),
             'source_id' => (string)$attributes['id'],
             'access_token' => $token,
+            'access_token_secret' => $tokenSecret
         ]);
 
         $auth->save();        
@@ -62,23 +65,23 @@ class SearchController extends Controller
 	{
         $user = Yii::$app->user->getIdentity();
         $request = Yii::$app->request;
+        $form = new SearchForm();
         if ($request->isPost) {
-            $q = $request->post('q');
+            $q = urldecode($request->post('q'));
 
             $connectedClients = $user->getConnectedClients();
             
             if ($connectedClients) {
-                $result = $this->search($connectedClients, $q);
+                $results = $this->search($connectedClients, $q);
             }
 
+            return $this->render('index', [
+                'formModel' => $form,
+                'user' => $user,
+                'results' => $results,
+            ]);
 
-            $fb = new Facebook();
-
-            
-            //$this->searchFb($q);
         }
-
-        $form = new SearchForm();
 
 		return $this->render('index', [
             'formModel' => $form,
@@ -115,20 +118,23 @@ class SearchController extends Controller
     {
         $results = array();
         foreach ($clients as $client) {
-            $results = array_merge($results, $this->searchInsideClient($client, $query));
+            if ($client->getSource() == 'linkedin') continue;
+
+            $results[$client->getSource()] = $this->searchInsideClient($client, $query);
         }      
-        die();
+        
+        return $results;
     }
 
     public function searchInsideClient($client, $query)
     {
         switch ($client->getSource()) {
             case 'vkontakte':
-                $clientOAuth = new VKontakte();
+                $clientOAuth = new PSVKontakte();
                 break;
 
             case 'facebook':
-                $clientOAuth = new Facebook();
+                $clientOAuth = new PSFacebook();
                 break;
 
             case 'google':
@@ -136,7 +142,7 @@ class SearchController extends Controller
                 break;
 
             case 'twitter':
-                $clientOAuth = new Twitter();
+                $clientOAuth = new PSTwitter();
                 break;
 
             case 'linkedin':
@@ -147,13 +153,21 @@ class SearchController extends Controller
         if (is_object($clientOAuth)) {
             $token = new OAuthToken();
             $token->setToken($client->access_token);
+            if ($client->getSource() == 'twitter') {
+                $token->setTokenSecret($client->access_token_secret);
+            }
             $clientOAuth->setAccessToken($token);
-            //$res = $clientOAuth->api('search/?q=' . $query . '&type=user', 'GET');
-            $res = $clientOAuth->api('search/', 'GET', ['q' => $query, 'type' => 'user']);
-            var_dump($res);
+
+            if ($client->getSource() == 'twitter') {
+                $clientOAuth->consumerKey = Yii::$app->components['authClientCollection']['clients']['twitter']['consumerKey'];
+                $clientOAuth->consumerSecret = Yii::$app->components['authClientCollection']['clients']['twitter']['consumerSecret'];
+            }
+
+
+            $result = $clientOAuth->searchUsers($query);
         } 
 
-        return array();
+        return $result;
     }
 
     public function searchFb($q)

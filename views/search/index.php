@@ -46,6 +46,7 @@ use yii\widgets\ActiveForm;
         <section class="sidebar">
           <!-- Sidebar user panel -->
           <ul class="sidebar-menu">
+              <li><a href="<?= Url::toRoute(['index']); ?>">Search</a></li>
               <li><a href="<?= Url::toRoute(['connect']); ?>">Connect</a></li>
           </ul>
         </section>
@@ -62,6 +63,12 @@ use yii\widgets\ActiveForm;
               <?= $form->field($formModel, 'q')->textInput(['name' => 'q']) ?>
               <?= Html::submitButton('Search', ['class' => 'btn btn-primary search']) ?>
               <?php ActiveForm::end() ?>
+
+              <?php
+              if ($results) {
+                  echo '<pre>'; print_r($results); echo '</pre>';  
+              }
+              ?>
           </section>
       </div>
       <!-- Left side column. contains the logo and sidebar -->

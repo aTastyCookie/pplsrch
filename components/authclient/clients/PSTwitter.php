@@ -15,4 +15,11 @@ class PSTwitter extends Twitter
             'photo' => 'profile_image_url'
         ];
     }
+
+    public function searchUsers($query)
+    { 
+        $result = $this->api('users/search.json', 'GET', ['q' => $query]);
+
+        return $result;
+    }
 }

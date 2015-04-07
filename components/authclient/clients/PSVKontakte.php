@@ -18,4 +18,11 @@ class PSVKontakte extends VKontakte
             }
         ];
     }
+
+    public function searchUsers($query)
+    {
+        $result = $this->api('users.search', 'GET', ['q' => $query, 'fields' => 'contacts, photo_50', 'count' => 1000]);
+
+        return $result;
+    }
 }

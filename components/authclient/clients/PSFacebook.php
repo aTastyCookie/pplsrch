@@ -30,4 +30,11 @@ class PSFacebook extends Facebook
             }
         ];
     }
+
+    public function searchUsers($query)
+    {
+        $result = $this->api('/search', 'GET', ['q' => $query, 'type' => 'user', 'limit' => 1000]);
+
+        return $result;
+    }
 }

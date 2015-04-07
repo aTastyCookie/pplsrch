@@ -46,6 +46,7 @@ use yii\widgets\ActiveForm;
         <section class="sidebar">
           <!-- Sidebar user panel -->
           <ul class="sidebar-menu">
+              <li><a href="<?= Url::toRoute(['index']); ?>">Search</a></li>
               <li><a href="<?= Url::toRoute(['connect']); ?>">Connect</a></li>
           </ul>
         </section>
