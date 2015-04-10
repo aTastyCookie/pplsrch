@@ -19,4 +19,11 @@ class PSGoogleOAuth extends GoogleOAuth
         ];
     }
 
+    public function searchUsers($query)
+    {
+        $result = $this->api('plus/v1/people', 'GET', ['query' => $query, 'maxResults' => 20]);
+
+        return $result;
+    }
+
 }

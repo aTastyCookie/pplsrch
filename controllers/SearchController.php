@@ -9,6 +9,7 @@ use app\models\SearchForm;
 use app\components\authclient\clients\PSVKontakte;
 use app\components\authclient\clients\PSFacebook;
 use app\components\authclient\clients\PSTwitter;
+use app\components\authclient\clients\PSGoogleOAuth;
 use yii\authclient\OAuthToken;
 use app\models\Auth;
 
@@ -23,7 +24,7 @@ class SearchController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'actions' => ['index', 'vk', 'connect', 'auth'],
+                        'actions' => ['index', 'vk', 'connect', 'auth', 'disconnect'],
                         'roles' => ['@'],
                     ],
                 ]
@@ -62,14 +63,22 @@ class SearchController extends Controller
     }
 
 	public function actionIndex()
-	{
+    {
         $user = Yii::$app->user->getIdentity();
         $request = Yii::$app->request;
         $form = new SearchForm();
+
+        $connectedClients = $user->getConnectedClients();
+        
+        if ($connectedClients) {
+            $connectedClientIds = array();
+            foreach ($connectedClients as $client) {
+                $connectedClientIds[] = $client->getSource();             
+            }
+        }
+
         if ($request->isPost) {
             $q = urldecode($request->post('q'));
-
-            $connectedClients = $user->getConnectedClients();
             
             if ($connectedClients) {
                 $results = $this->search($connectedClients, $q);
@@ -79,15 +88,17 @@ class SearchController extends Controller
                 'formModel' => $form,
                 'user' => $user,
                 'results' => $results,
+                'connectedClients' => isset($connectedClientIds) ? $connectedClientIds : NULL,
             ]);
 
         }
 
-		return $this->render('index', [
+        return $this->render('index', [
             'formModel' => $form,
-            'user' => $user
+            'user' => $user,
+            'connectedClients' => isset($connectedClientIds) ? $connectedClientIds : NULL,
         ]);
-	}
+    }
 
     public function actionConnect()
     {
@@ -95,23 +106,31 @@ class SearchController extends Controller
 
         $auths = Auth::find()->where([
             'user_id' => $user->id,
-        ])->all();
+        ])->asArray()->all();
 
-        foreach ($auths as $auth) {
-            $socials[$auth->source] = $auth;
-        }
-
-
+        $auths = $this->_indexByKey($auths, 'source');
 
         return $this->render('connect', [
             'user' => $user,
-            'socials' => $socials,
+            'auths' => $auths,
         ]);
     }
 
-    public function actionConnectAccount()
+    public function actionDisconnect()
     {
+        $user = Yii::$app->user->getIdentity();
+        $authClientId = Yii::$app->request->get('authclient');
 
+        $auth = Auth::find()->where([
+            'user_id' => $user->id,
+            'source' => $authClientId
+        ])->one();
+
+        var_dump($auth);die();
+
+        if ($auth->disconnect()) {
+            return $this->redirect(['connect']);
+        }
     }
 
     public function search($clients, $query)
@@ -138,7 +157,7 @@ class SearchController extends Controller
                 break;
 
             case 'google':
-                $clientOAuth = new GoogleOAuth();
+                $clientOAuth = new PSGoogleOAuth();
                 break;
 
             case 'twitter':
@@ -205,5 +224,15 @@ class SearchController extends Controller
         //$client = new VKontakte();
 
         //var_dump($post);
+    }
+
+    private function _indexByKey($array, $key) {
+        $indexedAr = array();
+        foreach ($array as $el) {
+            $indexedAr[$el[$key]] = $el;
+            unset($indexedAr[$el[$key]][$key]);
+        }
+
+        return $indexedAr;
     }
 }

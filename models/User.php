@@ -85,6 +85,7 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $clients = Auth::find()->where([
             'user_id' => $this->id,
+            'status' => 1
         ])->all();
 
         if (!count($clients)) {

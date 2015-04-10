@@ -54,18 +54,30 @@ use yii\widgets\ActiveForm;
       </aside>
       <div class="content-wrapper">
           <section class="content">
-              <?php
+              <?php if ($connectedClients) { ?>
+                  <p>Поиск будет осуществляться по: </p>
+                  <ul>
+                  <?php foreach ($connectedClients as $client) { ?>
+                      <li><?php echo $client; ?></li>
+                  <?php } ?>
+                  </ul>
+                  
+                  <?php
+                  $form = ActiveForm::begin([
+                      'method' => 'post',
+                      'action' => ['search/index']
+                  ]); ?>
+                  <?= $form->field($formModel, 'q')->textInput(['name' => 'q']) ?>
+                  <?= Html::submitButton('Search', ['class' => 'btn btn-primary search']) ?>
+                  <?php ActiveForm::end() ?>
+              <?php } else { ?>
+                  <p>Поиск невозможен. Ни одна соц. сеть не подключена</p>              
+              <?php } ?>
 
-              $form = ActiveForm::begin([
-                  'method' => 'post',
-                  'action' => ['search/index']
-              ]); ?>
-              <?= $form->field($formModel, 'q')->textInput(['name' => 'q']) ?>
-              <?= Html::submitButton('Search', ['class' => 'btn btn-primary search']) ?>
-              <?php ActiveForm::end() ?>
+              
 
               <?php
-              if ($results) {
+              if (isset($results)) {
                   echo '<pre>'; print_r($results); echo '</pre>';  
               }
               ?>
