@@ -126,8 +126,6 @@ class SearchController extends Controller
             'source' => $authClientId
         ])->one();
 
-        var_dump($auth);die();
-
         if ($auth->disconnect()) {
             return $this->redirect(['connect']);
         }

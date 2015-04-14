@@ -12,7 +12,8 @@ class PSVKontakte extends VKontakte
             'id' => 'uid',
             'name' => function ($data) {
                 return $data['first_name'] . ' ' . $data['last_name'];
-            }
+            },
+            'picture' => 'photo_50'
         ];
     }
 
@@ -71,7 +72,6 @@ class PSVKontakte extends VKontakte
         $data = $this->api('users.search', 'GET', ['q' => $query, 'fields' => 'contacts, photo_50', 'count' => 1000]);
         
         $result = $this->normalizeSearchResult($data['response']);
-        var_dump($result);die();
 
         return $result;
     }

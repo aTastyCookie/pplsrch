@@ -78,8 +78,20 @@ use yii\widgets\ActiveForm;
 
               <?php
               if (isset($results)) {
-                  echo '<pre>'; print_r($results); echo '</pre>';  
-              }
+                  foreach ($results as $client => $profiles) { ?>
+                      <p>Результаты поиска <?php echo $client; ?>:</p>
+                      <?php foreach ($profiles as $profile) { ?>
+                          <div class="profile-container">
+                              <div class="profile-picture">
+                                  <img src="<?php echo $profile['picture']; ?>" />
+                              </div>
+                              <div class="profile-data">
+                                  <b><?php echo $profile['name']; ?></b>
+                              </div>
+                          </div>
+                      <?php } ?>
+                  <?php } ?>  
+              <?php } ?>
               ?>
           </section>
       </div>
