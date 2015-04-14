@@ -92,7 +92,6 @@ use yii\widgets\ActiveForm;
                       <?php } ?>
                   <?php } ?>  
               <?php } ?>
-              ?>
           </section>
       </div>
       <!-- Left side column. contains the logo and sidebar -->

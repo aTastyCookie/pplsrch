@@ -51,15 +51,24 @@ class SearchController extends Controller
         $tokenSecret = $client->getAccessToken()->getTokenSecret();
         $attributes = $client->getUserAttributes();
 
-        $auth = new Auth([
-            'user_id' => $user->id,
+        $authExists = Auth::find()->where([
             'source' => $client->getId(),
-            'source_id' => (string)$attributes['id'],
-            'access_token' => $token,
-            'access_token_secret' => $tokenSecret
-        ]);
+            'user_id' => $user->id
+        ])->one();
 
-        $auth->save();        
+        if ($authExists) {
+            $authExists->connect();
+        } else {
+            $auth = new Auth([
+                'user_id' => $user->id,
+                'source' => $client->getId(),
+                'source_id' => (string)$attributes['id'],
+                'access_token' => $token,
+                'access_token_secret' => $tokenSecret
+            ]);
+
+            $auth->save();    
+        }
     }
 
 	public function actionIndex()
@@ -138,7 +147,7 @@ class SearchController extends Controller
             if ($client->getSource() == 'linkedin') continue;
 
             $results[$client->getSource()] = $this->searchInsideClient($client, $query);
-        }      
+        }     
         
         return $results;
     }

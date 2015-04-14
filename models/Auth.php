@@ -54,4 +54,12 @@ class Auth extends ActiveRecord
         return TRUE;
     }
 
+    public function connect()
+    {
+        $this->status = self::CONNECTED;
+        $this->save();
+
+        return TRUE;
+    }
+
 }
