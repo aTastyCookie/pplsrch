@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
+use yii\web\Response;
 use app\models\SearchForm;
 use app\components\authclient\clients\PSVKontakte;
 use app\components\authclient\clients\PSFacebook;
@@ -87,18 +88,38 @@ class SearchController extends Controller
         }
 
         if ($request->isPost) {
+            
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_HTML;
+            }
+
             $q = urldecode($request->post('q'));
             
             if ($connectedClients) {
                 $results = $this->search($connectedClients, $q);
             }
 
-            return $this->render('index', [
+            if (count($results)) {
+                $html = '';
+                foreach ($results as $client => $profiles) {
+                    $html .= '<div class="client-name">Результаты поиска ' . $client . ':</div>';
+                    foreach ($profiles as $profile) {
+                        $html .= '<div class="profile">
+                            <div class="picture"><img src="' . $profile['picture'] . '" /></div>
+                            <div class="profile-data"><b>' . $profile['name'] . '</b></div>
+                        </div>';
+                    }
+                }
+            }
+
+            return $html;
+
+            /*eturn $this->render('index', [
                 'formModel' => $form,
                 'user' => $user,
                 'results' => $results,
                 'connectedClients' => isset($connectedClientIds) ? $connectedClientIds : NULL,
-            ]);
+            ]);*/
 
         }
 

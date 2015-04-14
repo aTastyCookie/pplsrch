@@ -73,25 +73,7 @@ use yii\widgets\ActiveForm;
               <?php } else { ?>
                   <p>Поиск невозможен. Ни одна соц. сеть не подключена</p>              
               <?php } ?>
-
-              
-
-              <?php
-              if (isset($results)) {
-                  foreach ($results as $client => $profiles) { ?>
-                      <p>Результаты поиска <?php echo $client; ?>:</p>
-                      <?php foreach ($profiles as $profile) { ?>
-                          <div class="profile-container">
-                              <div class="profile-picture">
-                                  <img src="<?php echo $profile['picture']; ?>" />
-                              </div>
-                              <div class="profile-data">
-                                  <b><?php echo $profile['name']; ?></b>
-                              </div>
-                          </div>
-                      <?php } ?>
-                  <?php } ?>  
-              <?php } ?>
+              <div id="search-results"></div>
           </section>
       </div>
       <!-- Left side column. contains the logo and sidebar -->

@@ -31,3 +31,27 @@
 function callbackFunc(result) { 
     console.log(result); 
 } */
+
+$(document).ready(function() {
+    $('.search').click(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '/index.php?r=search%2Findex',
+            type: 'post',
+            data: {
+                'q' : $('input[name="q"]').val().trim()
+            },
+            dataType: 'html',
+            async: true,
+            beforeSend: function() {
+                $('#search-results').html('<span class="preloader"></span>');
+            },
+            success: function(response) {
+                $('#search-results').html(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log(textStatus);
+            }
+        });
+    });
+});
