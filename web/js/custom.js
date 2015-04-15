@@ -55,3 +55,7 @@ $(document).ready(function() {
         });
     });
 });
+$(document).on('click', '.show-more', function() {
+    $profile = $(this).parents('.profile');
+    $profile.find('.profile-more-data').slideToggle();
+});

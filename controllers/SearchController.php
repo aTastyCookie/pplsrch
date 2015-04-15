@@ -89,9 +89,7 @@ class SearchController extends Controller
 
         if ($request->isPost) {
             
-            if (Yii::$app->request->isAjax) {
-                Yii::$app->response->format = Response::FORMAT_HTML;
-            }
+            
 
             $q = urldecode($request->post('q'));
             
@@ -99,27 +97,50 @@ class SearchController extends Controller
                 $results = $this->search($connectedClients, $q);
             }
 
-            if (count($results)) {
-                $html = '';
-                foreach ($results as $client => $profiles) {
-                    $html .= '<div class="client-name">Результаты поиска ' . $client . ':</div>';
-                    foreach ($profiles as $profile) {
-                        $html .= '<div class="profile">
-                            <div class="picture"><img src="' . $profile['picture'] . '" /></div>
-                            <div class="profile-data"><b>' . $profile['name'] . '</b></div>
-                        </div>';
+            if (Yii::$app->request->isAjax) {
+                
+                Yii::$app->response->format = Response::FORMAT_HTML;
+
+                if (count($results)) {
+                    $html = '';
+                    foreach ($results as $client => $profiles) {
+                        $html .= '<div class="client-name">Результаты поиска ' . $client . ':</div>';
+                        foreach ($profiles as $profile) {
+                            $html .= '<div class="profile">
+                                <div class="top-profile">
+                                    <a class="show-more">развернуть</a>
+                                    <div class="picture">
+                                        <img src="' . $profile['picture'] . '" />
+                                    </div>
+                                    <div class="name">' . $profile['name'] . '</div>
+                                </div>
+                                <div class="profile-more-data">
+                                    <div class="picture-big">
+                                        <img src="' . $profile['picture_big'] . '" />
+                                    </div>
+                                    <div class="contact-info">
+                                        <div class="name">' . $profile['name'] . '</div>'
+                                        . ($profile['mobile_phone'] ? '<div class="mobile-phone">' . $profile['mobile_phone'] . '</div>' : '') 
+                                        . ($profile['home_phone'] ? '<div class="home-phone">' . $profile['home_phone'] . '</div>' : '') .
+                                        '<a href="' . $profile['profile_url'] . '">' . $profile['profile_url'] . '</a>
+                                    </div>
+                                </div>
+                            </div>';
+                        }
                     }
                 }
+
+                return $html;
+
+            } else {
+
+                return $this->render('index', [
+                    'formModel' => $form,
+                    'user' => $user,
+                    'results' => $results,
+                    'connectedClients' => isset($connectedClientIds) ? $connectedClientIds : NULL,
+                ]);
             }
-
-            return $html;
-
-            /*eturn $this->render('index', [
-                'formModel' => $form,
-                'user' => $user,
-                'results' => $results,
-                'connectedClients' => isset($connectedClientIds) ? $connectedClientIds : NULL,
-            ]);*/
 
         }
 
@@ -217,42 +238,6 @@ class SearchController extends Controller
         return $result;
     }
 
-    public function searchFb($q)
-    {
-
-        $user = Yii::$app->user->getIdentity();
-        $auth = Auth::find()->where([
-            'source' => 'facebook',
-            'user_id' => $user->id,
-        ])->one();
-
-        /*$vk = new VKontakte();
-
-        $token = new OAuthToken();
-        $token->setToken($auth->access_token);
-
-        $vk->setAccessToken($token);
-
-        $res = $vk->api('users.search', 'GET', ['q' => $q, 'fields' => 'contacts, photo_50']);
-        var_dump($res);*/
-
-        $fb = new Facebook();
-
-        $token = new OAuthToken();
-        $token->setToken($auth->access_token);
-
-        $fb->setAccessToken($token);
-
-        $res = $fb->api('search/?q=' . $q . '&type=user', 'GET');
-        var_dump($res);die();
-
-        /*$request = Yii::$app->request;
-        $post = $request->post();*/
-
-        //$client = new VKontakte();
-
-        //var_dump($post);
-    }
 
     private function _indexByKey($array, $key) {
         $indexedAr = array();

@@ -95,3 +95,31 @@ a.desc:after {
     height: 40px;
     background: url('../img/preloader.gif') no-repeat;
 }
+
+.profile {
+    width: 600px;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.top-profile .picture {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+}
+.top-profile .picture img {
+    max-width: 100%;
+    max-height: 100%;
+}
+.top-profile .name {
+    display: inline-block;
+}
+.top-profile .show-more {
+    float: right;
+    display: inline-block;   
+    cursor: pointer; 
+}
+.profile-more-data {
+    display: none;
+}

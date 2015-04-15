@@ -13,7 +13,17 @@ class PSVKontakte extends VKontakte
             'name' => function ($data) {
                 return $data['first_name'] . ' ' . $data['last_name'];
             },
-            'picture' => 'photo_50'
+            'picture' => 'photo_50',
+            'picture_big' => 'photo_200_orig',
+            'mobile_phone' => function($data) {
+                return (isset($data['mobile_phone']) && $data['mobile_phone']) ? $data['mobile_phone'] : NULL;
+            },
+            'home_phone' => function($data) {
+                return (isset($data['home_phone']) && $data['home_phone']) ? $data['home_phone'] : NULL;
+            },
+            'profile_url' => function($data) {
+                return 'https://vk.com/' . $data['screen_name'];
+            }
         ];
     }
 
@@ -69,8 +79,8 @@ class PSVKontakte extends VKontakte
 
     public function searchUsers($query)
     {
-        $data = $this->api('users.search', 'GET', ['q' => $query, 'fields' => 'contacts, photo_50', 'count' => 1000]);
-        
+        $data = $this->api('users.search', 'GET', ['q' => $query, 'fields' => 'contacts,photo_50,photo_200_orig,screen_name', 'count' => 50]);
+
         $result = $this->normalizeSearchResult($data['response']);
 
         return $result;

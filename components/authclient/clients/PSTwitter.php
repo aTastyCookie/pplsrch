@@ -19,13 +19,27 @@ class PSTwitter extends Twitter
     protected function getNormalizeSearchResultMap()
     {
         return [
-            'picture' => 'profile_image_url'
+            'picture' => 'profile_image_url',
+            'picture_big' => function($data) {
+                return preg_replace('|_normal|', '', $data['profile_image_url']);
+            },
+            'profile_url' => function($data) {
+                return 'https://twitter.com/' . $data['screen_name'];
+            },
+            'email' => function() {
+                return NULL;
+            },
+            'mobile_phone' => function() {
+                return NULL;
+            },
+            'home_phone' => function() {
+                return NULL;
+            }
         ];
     }
 
     protected function normalizeSearchResult($data) 
     {
-        unset($data[0]);
         foreach ($data as &$profile) {
             foreach ($this->getNormalizeSearchResultMap() as $normalizedName => $actualName) {
                 if (is_scalar($actualName)) {
