@@ -89,13 +89,18 @@ a.desc:after {
     padding: 10px 20px;
     margin: 0 0 15px 0;
 }
-.preloader {
+.preloader-vk {
     display: block;
     width: 40px;
     height: 40px;
-    background: url('../img/preloader.gif') no-repeat;
+    background: url('../img/preloader-vk.gif') no-repeat;
 }
-
+.preloader-fb {
+    display: block;
+    width: 40px;
+    height: 40px;
+    background: url('../img/preloader-fb.gif') no-repeat;
+}
 .profile {
     width: 600px;
     padding: 10px;
@@ -122,4 +127,8 @@ a.desc:after {
 }
 .profile-more-data {
     display: none;
+}
+.get-more {
+    display: block;
+    margin-bottom: 50px;
 }

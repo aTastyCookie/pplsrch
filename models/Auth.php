@@ -7,7 +7,6 @@ use yii\authclient\OAuthToken;
 
 class Auth extends ActiveRecord 
 {
-
     const DISCONNECTED = 0;
     const CONNECTED = 1;
 
@@ -31,6 +30,7 @@ class Auth extends ActiveRecord
             'token' => $this->access_token,
             'tokenSecret' => $this->access_token_secret,
             'createTimestamp' => $this->token_create_timestamp,
+            'expireDuration' => $this->token_expires_in
         ];
 
         $token = new OAuthToken($tokenParams);
@@ -43,6 +43,7 @@ class Auth extends ActiveRecord
         $this->access_token = $token->getToken();
         $this->token_create_timestamp = $token->createTimestamp;
         $this->access_token_secret = $token->getTokenSecret();
+        $this->token_expires_in = $token->getExpireDuration();
         $this->save();
     }
 
@@ -54,12 +55,18 @@ class Auth extends ActiveRecord
         return TRUE;
     }
 
-    public function connect()
+    public function enable()
     {
         $this->status = self::CONNECTED;
         $this->save();
-
+    
         return TRUE;
+    }
+
+    public function refreshConnect()
+    {
+        $token = $this->getAuthToken();
+        var_dump($token);die();
     }
 
 }

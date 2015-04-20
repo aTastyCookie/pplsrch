@@ -58,7 +58,8 @@ use yii\widgets\ActiveForm;
                   <p>Поиск будет осуществляться по: </p>
                   <ul>
                   <?php foreach ($connectedClients as $client) { ?>
-                      <li><?php echo $client; ?></li>
+                      <li><?php echo $client->source; ?></li>
+                      <input class="client-hidden" type="hidden" value="<?php echo $client->source; ?>"> 
                   <?php } ?>
                   </ul>
                   
@@ -73,7 +74,20 @@ use yii\widgets\ActiveForm;
               <?php } else { ?>
                   <p>Поиск невозможен. Ни одна соц. сеть не подключена</p>              
               <?php } ?>
-              <div id="search-results"></div>
+              <div id="search-results">
+                  <div class="search-results vk">
+                      <div class="title">Поиск по VK:</div>
+                      <div class="profiles"></div>
+                  </div>
+                  <div class="search-results fb">
+                      <div class="title">Поиск по Facebook:</div>
+                      <div class="profiles"></div>
+                  </div>
+                  <div class="search-results tw">
+                      <div class="title">Поиск по Twitter:</div>
+                      <div class="profiles"></div>
+                  </div>   
+              </div>
           </section>
       </div>
       <!-- Left side column. contains the logo and sidebar -->

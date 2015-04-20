@@ -60,7 +60,6 @@ class SiteController extends Controller
             }
         }
     }
-
     public function onAuthSuccess($client)
     {
         $attributes = $client->getUserAttributes();
@@ -73,7 +72,10 @@ class SiteController extends Controller
         if ($auth) {
             $user = $auth->getUser();
             $token = $client->getAccessToken();
+            //
+            //$token->getIsExpired();
             $auth->setAuthToken($token);
+            //var_dump($token);die();
             Yii::$app->user->login($user);
         } else {
             return $this->redirect(['site/index', 'need_reg' => '1']);
@@ -88,7 +90,7 @@ class SiteController extends Controller
             var_dump('Нет учетной записи $client');die();
         }
     }
-    
+
 	public function actionIndex()
     {
         $user = Yii::$app->user;

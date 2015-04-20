@@ -3,6 +3,7 @@
 namespace app\components\authclient\clients;
 
 use yii\authclient\clients\Facebook;
+use app\components\SearchResult;
 
 class PSFacebook extends Facebook
 {
@@ -88,23 +89,42 @@ class PSFacebook extends Facebook
         return $data;
     }
 
-    public function searchUsers($query)
+    public function searchUsers($queryString, $offset = 0, $limit = 20)
     {
-        $search = $this->api('/search', 'GET', ['q' => $query, 'type' => 'user', 'limit' => 50]);
+        $search = $this->api('/search', 'GET', ['q' => $queryString, 'type' => 'user', 'limit' => 5000]);
+        $totalProfilesCount = count($search['data']);
+
+        $profilesList = array_slice($search['data'], $offset);
+        
+        $queryItemsCount = count($profilesList);
+        if ($queryItemsCount > $limit) {
+            $profilesList = array_slice($profilesList, 0, $limit);
+            $queryItemsCount = $limit;
+        }
 
         $results = array();
-        foreach ($search['data'] as $profile) {
-            $profilesData[] = $this->getProfileData($profile['id']); 
+        foreach ($profilesList as $profileInfo) {
+            $profilesData[] = $this->getProfileData($profileInfo['id']); 
         } 
         
         $result = $this->normalizeSearchResult($profilesData);        
  
-        return $result;
+        $searchResult = new SearchResult($this->getId(), $result);
+
+        if (($offset + $queryItemsCount) < $totalProfilesCount) {
+            $nextQueryOffset = $offset + $limit;
+            $searchResult->setOffset($nextQueryOffset);
+        } else {
+            $searchResult->setOffset(FALSE);
+        }
+
+        return $searchResult;
     }
 
     public function getProfileData($userId)
     {
-        $data = $this->api('/' . $userId, 'GET', ['fields' => 'email,name,link,picture']);
+        //$data = $this->api('/' . $userId, 'GET', ['fields' => 'email,name,link,picture']);
+        $data = $this->api('/' . $userId, 'GET', ['fields' => 'email,name,link,picture,about,address,age_range,bio,birthday,devices,education,gender']);
 
         $pictureBig = $this->api('/' . $userId . '/picture?type=large&redirect=false', 'GET');
         $data['picture_big'] = $pictureBig['data']['url'];

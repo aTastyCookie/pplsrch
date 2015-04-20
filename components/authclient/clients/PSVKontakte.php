@@ -3,6 +3,8 @@
 namespace app\components\authclient\clients;
 
 use yii\authclient\clients\VKontakte;
+use yii\base\Exception;
+use app\components\SearchResult;
 
 class PSVKontakte extends VKontakte
 {
@@ -42,7 +44,6 @@ class PSVKontakte extends VKontakte
 
     protected function normalizeSearchResult($data) 
     {
-        unset($data[0]);
         foreach ($data as &$profile) {
             foreach ($this->getNormalizeSearchResultMap() as $normalizedName => $actualName) {
                 if (is_scalar($actualName)) {
@@ -77,12 +78,23 @@ class PSVKontakte extends VKontakte
         return $data;
     }
 
-    public function searchUsers($query)
+    public function searchUsers($queryString, $offset = 0, $limit = 20)
     {
-        $data = $this->api('users.search', 'GET', ['q' => $query, 'fields' => 'contacts,photo_50,photo_200_orig,screen_name', 'count' => 50]);
+        //$data = $this->api('users.search', 'GET', ['q' => $query, 'fields' => 'contacts,photo_50,photo_200_orig,screen_name', 'count' => 50]);
+        $data = $this->api('users.search', 'GET', ['q' => $queryString, 'v' => '5.30', 'fields' => 'nickname,screen_name,sex,bdate,city,country,timezone,photo_50,photo_100,photo_200_orig,has_mobile,contacts,education,online,relation,last_seen,status,can_write_private_message,can_see_all_posts,can_post,universities,domain', 'count' => $limit, 'offset' => $offset]);
+        $totalProfilesCount = $data['response']['count'];    
+        $queryItemsCount = count($data['response']['items']);
 
-        $result = $this->normalizeSearchResult($data['response']);
+        $result = $this->normalizeSearchResult($data['response']['items']);
+        $searchResult = new SearchResult($this->getId(), $result);
 
-        return $result;
+        if (($offset + $queryItemsCount) < $totalProfilesCount) {
+            $nextQueryOffset = $offset + $limit;
+            $searchResult->setOffset($nextQueryOffset);
+        } else {
+            $searchResult->setOffset(FALSE);
+        }
+
+        return $searchResult;
     }
 }

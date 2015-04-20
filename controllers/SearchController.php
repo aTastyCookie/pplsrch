@@ -25,7 +25,7 @@ class SearchController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'actions' => ['index', 'vk', 'connect', 'auth', 'disconnect'],
+                        'actions' => ['index', 'vk', 'connect', 'auth', 'disconnect', 'search-profiles'],
                         'roles' => ['@'],
                     ],
                 ]
@@ -45,12 +45,8 @@ class SearchController extends Controller
 
     public function onAuthSuccessConnect($client)
     {
-
         $user = Yii::$app->user->getIdentity();
-
-        $token = $client->getAccessToken()->getToken();
-        $tokenSecret = $client->getAccessToken()->getTokenSecret();
-        $attributes = $client->getUserAttributes();
+        $authToken = $client->getAccessToken();
 
         $authExists = Auth::find()->where([
             'source' => $client->getId(),
@@ -58,18 +54,19 @@ class SearchController extends Controller
         ])->one();
 
         if ($authExists) {
-            $authExists->connect();
+            $auth = $authExists;
+            $auth->status = 1;
         } else {
             $auth = new Auth([
                 'user_id' => $user->id,
                 'source' => $client->getId(),
                 'source_id' => (string)$attributes['id'],
-                'access_token' => $token,
-                'access_token_secret' => $tokenSecret
-            ]);
-
-            $auth->save();    
+                'status' => 1
+            ]);    
         }
+
+        $auth->setAuthToken($authToken);
+        $auth->save();
     }
 
 	public function actionIndex()
@@ -78,23 +75,18 @@ class SearchController extends Controller
         $request = Yii::$app->request;
         $form = new SearchForm();
 
-        $connectedClients = $user->getConnectedClients();
+        $connectedAuths = $user->getConnectedAuths();
         
-        if ($connectedClients) {
-            $connectedClientIds = array();
-            foreach ($connectedClients as $client) {
-                $connectedClientIds[] = $client->getSource();             
-            }
+        if ($connectedAuths) {
+            $connectedAuths = $this->disableExpiredAuths($connectedAuths);
         }
-
+    
         if ($request->isPost) {
             
-            
-
             $q = urldecode($request->post('q'));
             
-            if ($connectedClients) {
-                $results = $this->search($connectedClients, $q);
+            if ($connectedAuths) {
+                $results = $this->search($connectedAuths, $q);
             }
 
             if (Yii::$app->request->isAjax) {
@@ -103,9 +95,10 @@ class SearchController extends Controller
 
                 if (count($results)) {
                     $html = '';
-                    foreach ($results as $client => $profiles) {
-                        $html .= '<div class="client-name">Результаты поиска ' . $client . ':</div>';
-                        foreach ($profiles as $profile) {
+                    foreach ($results as $result) {
+                        $html .= '<div class="client-name">Результаты поиска ' . $result->getClientId() . ':</div>';
+                        
+                        foreach ($result->getProfiles() as $profile) {
                             $html .= '<div class="profile">
                                 <div class="top-profile">
                                     <a class="show-more">развернуть</a>
@@ -126,6 +119,7 @@ class SearchController extends Controller
                                     </div>
                                 </div>
                             </div>';
+                            $html .= '<br>' . '<pre>' . print_r($profile, true) . '</pre>';
                         }
                     }
                 }
@@ -138,7 +132,7 @@ class SearchController extends Controller
                     'formModel' => $form,
                     'user' => $user,
                     'results' => $results,
-                    'connectedClients' => isset($connectedClientIds) ? $connectedClientIds : NULL,
+                    'connectedClients' => isset($connectedAuths) ? $connectedAuths : NULL,
                 ]);
             }
 
@@ -147,7 +141,7 @@ class SearchController extends Controller
         return $this->render('index', [
             'formModel' => $form,
             'user' => $user,
-            'connectedClients' => isset($connectedClientIds) ? $connectedClientIds : NULL,
+            'connectedClients' => isset($connectedAuths) ? $connectedAuths : NULL,
         ]);
     }
 
@@ -182,13 +176,28 @@ class SearchController extends Controller
         }
     }
 
-    public function search($clients, $query)
+    public function search($auths, $query)
     {
+        $collection = Yii::$app->get('authClientCollection');
+        
         $results = array();
-        foreach ($clients as $client) {
-            if ($client->getSource() == 'linkedin') continue;
+        foreach ($auths as $auth) {
+            $clientId = $auth->getSource();
 
-            $results[$client->getSource()] = $this->searchInsideClient($client, $query);
+            if ($clientId == 'linkedin') continue;
+            
+            if ($collection->hasClient($clientId)) {
+
+                $client = $collection->getClient($clientId);
+                
+                $authToken = $auth->getAuthToken();
+                if ($authToken->getIsExpired()) continue;
+                $client->setAccessToken($authToken);
+
+                $this->runAction('search-profiles', ['clientId' => $clientId, 'queryString' => $query]);
+
+                //$results[] = $this->searchInsideClient($client, $query);
+            }
         }     
         
         return $results;
@@ -196,46 +205,83 @@ class SearchController extends Controller
 
     public function searchInsideClient($client, $query)
     {
-        switch ($client->getSource()) {
-            case 'vkontakte':
-                $clientOAuth = new PSVKontakte();
-                break;
+        if (is_object($client)) {
 
-            case 'facebook':
-                $clientOAuth = new PSFacebook();
-                break;
-
-            case 'google':
-                $clientOAuth = new PSGoogleOAuth();
-                break;
-
-            case 'twitter':
-                $clientOAuth = new PSTwitter();
-                break;
-
-            case 'linkedin':
-                $clientOAuth = new LinkedIn();
-                break;
-        }
-
-        if (is_object($clientOAuth)) {
-            $token = new OAuthToken();
-            $token->setToken($client->access_token);
-            if ($client->getSource() == 'twitter') {
-                $token->setTokenSecret($client->access_token_secret);
-            }
-            $clientOAuth->setAccessToken($token);
-
-            if ($client->getSource() == 'twitter') {
-                $clientOAuth->consumerKey = Yii::$app->components['authClientCollection']['clients']['twitter']['consumerKey'];
-                $clientOAuth->consumerSecret = Yii::$app->components['authClientCollection']['clients']['twitter']['consumerSecret'];
+            if ($client->getId() == 'twitter') {
+                $client->consumerKey = Yii::$app->components['authClientCollection']['clients']['twitter']['consumerKey'];
+                $client->consumerSecret = Yii::$app->components['authClientCollection']['clients']['twitter']['consumerSecret'];
             }
 
 
-            $result = $clientOAuth->searchUsers($query);
+            $searchResult = $client->searchUsers($query);
+            //var_dump($searchResult);die();
         } 
 
-        return $result;
+        return $searchResult;
+    }
+
+    public function actionSearchProfiles()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        $request = Yii::$app->getRequest();
+
+        $clientId = $request->post('client');
+        $offset = $request->post('offset');
+        $queryString = $request->post('q');                 
+        
+        $collection = Yii::$app->get('authClientCollection');
+        
+        if ($collection->hasClient($clientId)) {
+            $client = $collection->getClient($clientId);
+            $searchResult = $client->searchUsers($queryString, $offset);
+
+            $html = '';
+            if ($searchResult->getProfiles()) {
+                $html .= $this->getFoundProfilesHtml($searchResult->getProfiles());
+            }
+            //var_dump($searchResult->canGetMore());die();
+            if ($searchResult->canGetMore()) {
+                $moreLink = '<a class="get-more" data-client="' . $clientId . '" data-offset="' . $searchResult->getOffset() . '" data-query="' . $queryString . '">GiveMeMore</a>';
+            }
+        }
+
+        return [
+            'profiles' => $html,
+            'more' => isset($moreLink) ? $moreLink : NULL
+        ];
+    }
+
+    public function getFoundProfilesHtml($profiles) {
+        if (!count($profiles)) {
+            return false;
+        }
+
+        $html = '';
+        foreach ($profiles as $profile) {
+            $html .= '<div class="profile">
+                <div class="top-profile">
+                    <a class="show-more">развернуть</a>
+                    <div class="picture">
+                        <img src="' . $profile['picture'] . '" />
+                    </div>
+                    <div class="name">' . $profile['name'] . '</div>
+                </div>
+                <div class="profile-more-data">
+                    <div class="picture-big">
+                        <img src="' . $profile['picture_big'] . '" />
+                    </div>
+                    <div class="contact-info">
+                        <div class="name">' . $profile['name'] . '</div>'
+                        . ($profile['mobile_phone'] ? '<div class="mobile-phone">' . $profile['mobile_phone'] . '</div>' : '') 
+                        . ($profile['home_phone'] ? '<div class="home-phone">' . $profile['home_phone'] . '</div>' : '') .
+                        '<a href="' . $profile['profile_url'] . '">' . $profile['profile_url'] . '</a>
+                    </div>
+                </div>
+            </div>';
+        }
+
+        return $html;
     }
 
 
@@ -247,5 +293,19 @@ class SearchController extends Controller
         }
 
         return $indexedAr;
+    }
+
+    public function disableExpiredAuths($auths)
+    {
+        foreach ($auths as $key => $auth) {
+            $authToken = $auth->getAuthToken();
+            if ($authToken->getIsExpired()) {
+                $auth->status = 0;
+                $auth->save();
+                unset($auths[$key]);
+            }
+        }
+
+        return $auths;
     }
 }

@@ -81,17 +81,17 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->password === $password;
     }
 
-    public function getConnectedClients()
+    public function getConnectedAuths()
     {
-        $clients = Auth::find()->where([
+        $auths = Auth::find()->where([
             'user_id' => $this->id,
             'status' => 1
         ])->all();
 
-        if (!count($clients)) {
+        if (!count($auths)) {
             return FALSE;
         }
 
-        return $clients;
+        return $auths;
     }
 }
