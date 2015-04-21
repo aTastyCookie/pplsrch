@@ -86,6 +86,10 @@ use yii\widgets\ActiveForm;
                   <div class="search-results" id="tw">
                       <div class="title">Поиск по Twitter:</div>
                       <div class="profiles"></div>
+                  </div>
+                  <div class="search-results" id="gg">
+                      <div class="title">Поиск по Google+:</div>
+                      <div class="profiles"></div>
                   </div>   
               </div>
           </section>
