@@ -53,12 +53,12 @@ var Vkontakte = {
             dataType: 'json',
             async: true,
             beforeSend: function() {
-                $('.vk .profiles').html('<span class="preloader-' + that.alias +'"></span>');
+                $('#vk .profiles').html('<span class="preloader-' + that.alias +'"></span>');
             },
             success: function(response) {
-                $('.vk .profiles').html(response.profiles);
+                $('#vk .profiles').html(response.profiles);
                 if (response.more) {
-                    $('.vk').append('<div class="more-wrap">' + response.more + '</div>');
+                    $('#vk').append('<div class="more-wrap">' + response.more + '</div>');
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -89,12 +89,12 @@ var Facebook = {
             dataType: 'json',
             async: true,
             beforeSend: function() {
-                $('.fb .profiles').html('<span class="preloader-' + that.alias +'"></span>');
+                $('#fb .profiles').html('<span class="preloader-' + that.alias +'"></span>');
             },
             success: function(response) {
-                $('.fb .profiles').html(response.profiles);
+                $('#fb .profiles').html(response.profiles);
                 if (response.more) {
-                    $('.fb').append('<div class="more-wrap">' + response.more + '</div>');
+                    $('#fb').append('<div class="more-wrap">' + response.more + '</div>');
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -105,13 +105,12 @@ var Facebook = {
 };
 
 var Twitter = {
-    q : '',
     alias: 'tw',
     foo : '',
     init: function(q) {
         this.foo = 'set!';
-        this.search();
         this.q = q;
+        this.search();
     },
     search: function() {
         var that = this;
@@ -123,13 +122,16 @@ var Twitter = {
                 'client' : 'twitter',
                 'offset' : 0
             },
-            dataType: 'html',
+            dataType: 'json',
             async: true,
             beforeSend: function() {
-                $('#twitter').html('<span class="preloader-' + that.alias +'"></span>');
+                $('#tw .profiles').html('<span class="preloader-' + that.alias +'"></span>');
             },
             success: function(response) {
-                $('#twitter').html(response);
+                $('#tw .profiles').html(response.profiles);
+                if (response.more) {
+                    $('#tw').append('<div class="more-wrap">' + response.more + '</div>');
+                }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log(textStatus);
@@ -139,25 +141,28 @@ var Twitter = {
 };
 
 $(document).on('click', '.get-more', function() {
+    $block = $(this).parents('.search-results');
+    clientId = $block.attr('id');
     $.ajax({
         url: '/index.php?r=search%2Fsearch-profiles',
         type: 'post',
         data: {
             'q' : $(this).attr('data-query'),
             'client' : $(this).attr('data-client'),
-            'offset' : $(this).attr('data-offset')
+            'offset' : $(this).attr('data-offset'),
+            'after': $(this).attr('data-after'),
         },
         dataType: 'json',
         async: true,
         beforeSend: function() {
-            $('.vk .more-wrap').html('<span class="preloader-vk"></span>');
+            $block.find('.more-wrap').html('<span class="preloader-' + clientId + '"></span>');
         },
         success: function(response) {
-            $('.vk .profiles').append(response.profiles);
+            $block.find('.profiles').append(response.profiles);
             if (response.more) {
-                $('.vk .more-wrap').html(response.more);    
+                $block.find('.more-wrap').html(response.more);    
             } else {
-                $('.vk .more-wrap').remove();
+                $block.find('.more-wrap').remove();
             }
             
         }
@@ -169,6 +174,7 @@ $(document).on('click', '.get-more', function() {
 $(document).ready(function() {
     $('.search').click(function(e) {
         e.preventDefault();
+        $('.more-wrap').remove();
         var q = $('input[name="q"]').val().trim();
         console.log(q);
         $('.client-hidden').each(function() {

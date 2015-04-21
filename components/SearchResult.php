@@ -10,6 +10,7 @@ class SearchResult extends Object
 	private $_count;
 	private $_offset;
 	private $_clientId;
+	private $_after;
 
 	public function __construct($clientId, $profiles, $count = 50, $offset = 0)
 	{
@@ -42,5 +43,15 @@ class SearchResult extends Object
 	public function setOffset($offset)
 	{
 		$this->_offset = $offset;
+	}
+
+	public function getAfter()
+	{
+		return $this->_after;
+	}
+
+	public function setAfter($after)
+	{
+		$this->_after = $after;
 	}
 }

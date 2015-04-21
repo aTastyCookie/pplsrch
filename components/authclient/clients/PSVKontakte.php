@@ -78,7 +78,7 @@ class PSVKontakte extends VKontakte
         return $data;
     }
 
-    public function searchUsers($queryString, $offset = 0, $limit = 20)
+    public function searchUsers($queryString, $offset = 0, $limit = 20, $after)
     {
         //$data = $this->api('users.search', 'GET', ['q' => $query, 'fields' => 'contacts,photo_50,photo_200_orig,screen_name', 'count' => 50]);
         $data = $this->api('users.search', 'GET', ['q' => $queryString, 'v' => '5.30', 'fields' => 'nickname,screen_name,sex,bdate,city,country,timezone,photo_50,photo_100,photo_200_orig,has_mobile,contacts,education,online,relation,last_seen,status,can_write_private_message,can_see_all_posts,can_post,universities,domain', 'count' => $limit, 'offset' => $offset]);

@@ -3,6 +3,7 @@
 namespace app\components\authclient\clients;
 
 use yii\authclient\clients\Twitter;
+use app\components\SearchResult;
 
 class PSTwitter extends Twitter
 {
@@ -74,12 +75,31 @@ class PSTwitter extends Twitter
         return $data;
     }
 
-    public function searchUsers($query)
+    public function searchUsers($queryString, $offset = 0, $limit = 20, $after)
     { 
-        $data = $this->api('users/search.json', 'GET', ['q' => $query]);
+        if ($offset) {
+            $page = $offset;
+        } else {
+            $page = 1;
+        }
+
+        $data = $this->api('users/search.json', 'GET', ['q' => $queryString, 'page' => $page, 'count' => $limit]);
+        $queryItemsCount = count($data);
 
         $result = $this->normalizeSearchResult($data);
+        $lastElementId = end($result);
 
-        return $result;
+        $searchResult = new SearchResult($this->getId(), $result);
+
+        if ($queryItemsCount == $limit && $data[$limit-1]['id'] != $after) {
+            $nextQueryOffset = $page + 1;
+            $searchResult->setOffset($nextQueryOffset);
+            $searchResult->setAfter($lastElementId['id']);
+        } else {
+            $searchResult->setOffset(FALSE);
+            $searchResult->setAfter(FALSE);
+        }
+
+        return $searchResult;
     }
 }

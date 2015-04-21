@@ -226,15 +226,17 @@ class SearchController extends Controller
         
         $request = Yii::$app->getRequest();
 
+        $limit = 20;
         $clientId = $request->post('client');
         $offset = $request->post('offset');
-        $queryString = $request->post('q');                 
+        $queryString = $request->post('q');
+        $after = $request->post('after');                 
         
         $collection = Yii::$app->get('authClientCollection');
         
         if ($collection->hasClient($clientId)) {
             $client = $collection->getClient($clientId);
-            $searchResult = $client->searchUsers($queryString, $offset);
+            $searchResult = $client->searchUsers($queryString, $offset, $limit, $after);
 
             $html = '';
             if ($searchResult->getProfiles()) {
@@ -242,7 +244,11 @@ class SearchController extends Controller
             }
             //var_dump($searchResult->canGetMore());die();
             if ($searchResult->canGetMore()) {
-                $moreLink = '<a class="get-more" data-client="' . $clientId . '" data-offset="' . $searchResult->getOffset() . '" data-query="' . $queryString . '">GiveMeMore</a>';
+                $moreLink = '<button type="button" class="get-more"';
+                if ($searchResult->getAfter()) {
+                   $moreLink .= ' data-after="' . $searchResult->getAfter() . '"'; 
+                }
+                $moreLink .= ' data-client="' . $clientId . '" data-offset="' . $searchResult->getOffset() . '" data-query="' . $queryString . '">GiveMeMore</button>';
             }
         }
 

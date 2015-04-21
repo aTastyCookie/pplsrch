@@ -75,15 +75,15 @@ use yii\widgets\ActiveForm;
                   <p>Поиск невозможен. Ни одна соц. сеть не подключена</p>              
               <?php } ?>
               <div id="search-results">
-                  <div class="search-results vk">
+                  <div class="search-results" id="vk">
                       <div class="title">Поиск по VK:</div>
                       <div class="profiles"></div>
                   </div>
-                  <div class="search-results fb">
+                  <div class="search-results" id="fb">
                       <div class="title">Поиск по Facebook:</div>
                       <div class="profiles"></div>
                   </div>
-                  <div class="search-results tw">
+                  <div class="search-results" id="tw">
                       <div class="title">Поиск по Twitter:</div>
                       <div class="profiles"></div>
                   </div>   
