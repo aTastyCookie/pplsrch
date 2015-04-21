@@ -119,7 +119,7 @@ var Google = {
             type: 'post',
             data: {
                 'q' : that.q,
-                'client' : 'gg',
+                'client' : 'google',
                 'offset' : 0
             },
             dataType: 'json',
