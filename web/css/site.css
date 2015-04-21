@@ -107,6 +107,12 @@ a.desc:after {
     height: 40px;
     background: url('../img/preloader-tw.gif') no-repeat;
 }
+.preloader-gg {
+    display: block;
+    width: 40px;
+    height: 40px;
+    background: url('../img/preloader-gg.gif') no-repeat;
+}
 .profile {
     width: 600px;
     padding: 10px;

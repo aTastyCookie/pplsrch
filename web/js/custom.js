@@ -104,6 +104,42 @@ var Facebook = {
     }
 };
 
+var Google = {
+    alias: 'gg',
+    foo : '',
+    init: function(q) {
+        this.foo = 'set!';
+        this.q = q;
+        this.search();
+    },
+    search: function() {
+        var that = this;
+        $.ajax({
+            url: '/index.php?r=search%2Fsearch-profiles',
+            type: 'post',
+            data: {
+                'q' : that.q,
+                'client' : 'gg',
+                'offset' : 0
+            },
+            dataType: 'json',
+            async: true,
+            beforeSend: function() {
+                $('#gg .profiles').html('<span class="preloader-' + that.alias +'"></span>');
+            },
+            success: function(response) {
+                $('#gg .profiles').html(response.profiles);
+                if (response.more) {
+                    $('#gg').append('<div class="more-wrap">' + response.more + '</div>');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log(textStatus);
+            }
+        });
+    }
+};
+
 var Twitter = {
     alias: 'tw',
     foo : '',
@@ -186,6 +222,9 @@ $(document).ready(function() {
             }
             if ($(this).val() == 'twitter') {
                 Twitter.init(q);
+            }
+            if ($(this).val() == 'google') {
+                Google.init(q);
             }
         });
 
