@@ -144,3 +144,7 @@ a.desc:after {
     display: block;
     margin-bottom: 50px;
 }
+.error {
+    font-weight: bold;
+    color: red;
+}

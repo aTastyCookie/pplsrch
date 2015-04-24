@@ -14,7 +14,9 @@ class SearchResult extends Object
 
 	public function __construct($clientId, $profiles, $count = 50, $offset = 0)
 	{
-        $this->_profiles = $profiles;
+		if (count($profiles)) {
+		    $this->_profiles = $profiles;	
+		}
         $this->_count = $count;
         $this->_offset = $offset;
         $this->_clientId = $clientId;

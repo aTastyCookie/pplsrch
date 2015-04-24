@@ -92,6 +92,9 @@ class PSFacebook extends Facebook
     public function searchUsers($queryString, $offset = 0, $limit = 20, $after)
     {
         $search = $this->api('/search', 'GET', ['q' => $queryString, 'type' => 'user', 'limit' => 5000]);
+        
+
+
         $totalProfilesCount = count($search['data']);
 
         $profilesList = array_slice($search['data'], $offset);
@@ -102,7 +105,7 @@ class PSFacebook extends Facebook
             $queryItemsCount = $limit;
         }
 
-        $results = array();
+        $profilesData = array();
         foreach ($profilesList as $profileInfo) {
             $profilesData[] = $this->getProfileData($profileInfo['id']); 
         } 

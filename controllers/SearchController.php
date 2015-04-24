@@ -223,7 +223,9 @@ class SearchController extends Controller
     public function actionSearchProfiles()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        
+
+        $user = Yii::$app->user->getIdentity(); 
+
         $request = Yii::$app->getRequest();
 
         $limit = 20;
@@ -234,35 +236,44 @@ class SearchController extends Controller
         
         $collection = Yii::$app->get('authClientCollection');
         
-        if ($collection->hasClient($clientId)) {
-            $client = $collection->getClient($clientId);
-            $searchResult = $client->searchUsers($queryString, $offset, $limit, $after);
+        if ($collection->hasClient($clientId)) {           
+            $auth = Auth::find()->where([
+                'source' => $clientId,
+                'user_id' => $user->getId()
+            ])->one();
 
-            $html = '';
-            if ($searchResult->getProfiles()) {
-                $html .= $this->getFoundProfilesHtml($searchResult->getProfiles());
-            }
-            //var_dump($searchResult->canGetMore());die();
-            if ($searchResult->canGetMore()) {
-                $moreLink = '<button type="button" class="get-more"';
-                if ($searchResult->getAfter()) {
-                   $moreLink .= ' data-after="' . $searchResult->getAfter() . '"'; 
+            $accessToken = $auth->getAuthToken();
+
+            if ($accessToken->getIsValid()) {
+                $client = $collection->getClient($clientId);
+                $client->setAccessToken($accessToken);    
+                $searchResult = $client->searchUsers($queryString, $offset, $limit, $after);
+                if ($searchResult->getProfiles()) {
+                    $html = $this->getFoundProfilesHtml($searchResult->getProfiles());
                 }
-                $moreLink .= ' data-client="' . $clientId . '" data-offset="' . $searchResult->getOffset() . '" data-query="' . $queryString . '">GiveMeMore</button>';
-            }
+                
+                if ($searchResult->canGetMore()) {
+                    $moreLink = '<button type="button" class="get-more"';
+                    if ($searchResult->getAfter()) {
+                       $moreLink .= ' data-after="' . $searchResult->getAfter() . '"'; 
+                    }
+                    $moreLink .= ' data-client="' . $clientId . '" data-offset="' . $searchResult->getOffset() . '" data-query="' . $queryString . '">GiveMeMore</button>';
+                }
+            } else {
+                return [
+                    'error' => '<p class="error">Ошибка токена. Необходимо обновить</p>'
+                ];
+            }             
         }
 
         return [
-            'profiles' => $html,
+            'profiles' => isset($html) ? $html : '<p class="error">Поиск не дал результатов</p>',
             'more' => isset($moreLink) ? $moreLink : NULL
         ];
     }
 
-    public function getFoundProfilesHtml($profiles) {
-        if (!count($profiles)) {
-            return false;
-        }
-
+    public function getFoundProfilesHtml($profiles) 
+    {
         $html = '';
         foreach ($profiles as $profile) {
             $html .= '<div class="profile">

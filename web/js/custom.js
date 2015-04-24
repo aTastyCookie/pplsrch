@@ -56,9 +56,13 @@ var Vkontakte = {
                 $('#vk .profiles').html('<span class="preloader-' + that.alias +'"></span>');
             },
             success: function(response) {
-                $('#vk .profiles').html(response.profiles);
-                if (response.more) {
-                    $('#vk').append('<div class="more-wrap">' + response.more + '</div>');
+                if (!response.error) {
+                    $('#vk .profiles').html(response.profiles);
+                    if (response.more) {
+                        $('#vk').append('<div class="more-wrap">' + response.more + '</div>');
+                    }
+                } else {
+                    $('#vk .profiles').html(response.error);
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
