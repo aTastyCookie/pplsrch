@@ -216,6 +216,7 @@ class SearchController extends Controller
     public function actionConnect()
     {
         $user = Yii::$app->user->getIdentity();
+        $this->view->params['user'] = $user;
 
         $auths = Auth::find()->where([
             'user_id' => $user->id,
