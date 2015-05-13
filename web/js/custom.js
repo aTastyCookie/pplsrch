@@ -1,36 +1,118 @@
-/*$(document).ready(function() {
-	$('.search').click(function(e) {
-        e.preventDefault();
+var MyRequestsCompleted = (function() {
+    var numRequestToComplete, requestsCompleted, callBacks, singleCallBack;
 
-        var queryParams = $('#search-form').serialize();
-        console.log(queryParams);
+    return function(options) {
+        if (!options) options = {};
 
-        var script = document.createElement('SCRIPT'); 
-        script.src = "https://api.vk.com/method/users.get?callback=callbackFunc"; 
-        document.getElementsByTagName("head")[0].appendChild(script); 
+        numRequestToComplete = options.numRequest || 0;
+        requestsCompleted = options.requestsCompleted || 0;
+        callBacks = [];
+        var fireCallbacks = function() {
+            for (var i = 0; i < callBacks.length; i++) callBacks[i]();
+        };
+        if (options.singleCallback) callBacks.push(options.singleCallback);
 
+        this.addCallbackToQueue = function(isComplete, callback) {
+            if (isComplete) requestsCompleted++;
+            if (callback) callBacks.push(callback);
+            if (requestsCompleted == numRequestToComplete) fireCallbacks();
+        };
+        this.requestComplete = function(isComplete) {
+            if (isComplete) requestsCompleted++;
+            if (requestsCompleted == numRequestToComplete) fireCallbacks();
+        };
+        this.setCallback = function(callback) {
+            callBacks.push(callBack);
+        };
+    };
+})();
 
-        $.ajax({
-        	url: 'https://api.vk.com/method/users.get',
-        	type: 'get',
-        	dataType: 'jsonp',
-        	data: queryParams,
-        	beforeSend: function() {
-                console.log(queryParams);
-        	},
-        	success: function(response) {
-            
-        	},
-        	error: function(xhr, ajaxOptions, thrownError) {
-        		console.log(thrownError);
-        	}
-        });
-	});
+var requestCallback = new MyRequestsCompleted({
+    numRequest: 3,
+    singleCallback: function(){
+        compare();
+    }
 });
 
-function callbackFunc(result) { 
-    console.log(result); 
-} */
+function compare() {
+    var imgs = [];
+    var hashes = [];
+
+    $('.profile').each(function() {
+        imgs.push($(this).find('.top-profile').find('img').attr('src'));
+        hashes.push($(this).attr('id'));
+    });
+
+    $.ajax({
+        url: '/index.php?r=search/compare-pics',
+        type: 'post',
+        data: {
+            images: imgs.join(','),
+            hashes: hashes.join(','),
+        },
+        dataType: 'json',
+        success: function(response) {
+            for (var key in response) {
+                createProfileGroup(key, response[key]);
+
+
+                //$profile = $('#' + key);
+                //$profile.insertAfter('#w0');
+
+            }
+        },
+        error: function() {
+            alert('Ошибка!');
+        }
+    });
+}
+
+function createProfileGroup(key, data) {
+    $group = $('<div class="profile-group" />');
+    $img = $('#' + key).find('img');
+    $('#' + key).remove();
+    $group.append($img);
+    $group.insertAfter('#w0');
+    
+    for (var i = 0; i < data.length; i++) {
+        $('#' + data[i]).remove();
+    }
+
+    console.log(key);
+    console.log(data);
+}
+
+
+function searchRequest(q, client, offset, clientPseudo)
+{
+    $.ajax({
+        url: '/index.php?r=search%2Fsearch-profiles',
+        type: 'post',
+        data: {
+            'q': q,
+            'client': client,
+            'offset': offset,
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#' + clientPseudo + ' .profiles').html('<span class="preloader-' + clientPseudo + '"></span>');
+        },
+        success: function(response) {
+            if (!response.error) {
+                $('#' + clientPseudo + ' .profiles').html(response.profiles);
+                if (response.more) {
+                    $('#' + clientPseudo).append('<div class="more-wrap">' + response.more + '</div>');
+                }
+            } else {
+                $('#' + clientPseudo + ' .profiles').html(response.error);
+            }
+            requestCallback.requestComplete(true);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(textStatus);
+        }
+    });
+}
 
 var Vkontakte = {
     alias : 'vk',
@@ -218,7 +300,8 @@ $(document).ready(function() {
         var q = $('input[name="q"]').val().trim();
         console.log(q);
         $('.client-hidden').each(function() {
-            if ($(this).val() == 'vkontakte') {
+            var clientPseudo;
+            /*if ($(this).val() == 'vkontakte') {
                 Vkontakte.init(q);
             }
             if ($(this).val() == 'facebook') {
@@ -229,49 +312,21 @@ $(document).ready(function() {
             }
             if ($(this).val() == 'google') {
                 Google.init(q);
+            }*/
+            if ($(this).val() == 'vkontakte') {
+                clientPseudo = 'vk';
             }
+            if ($(this).val() == 'facebook') {
+                clientPseudo = 'fb';
+            }
+            if ($(this).val() == 'twitter') {
+                clientPseudo = 'tw';
+            }
+            if ($(this).val() == 'google') {
+                clientPseudo = 'gg';
+            }
+            searchRequest(q, $(this).val(), 0, clientPseudo);
         });
-
-        /*$.ajax({
-            url: '/index.php?r=search%2Fsearch-profiles',
-            type: 'post',
-            data: {
-                'q' : $('input[name="q"]').val().trim(),
-                'client' : 'vkontakte',
-                'offset' : 0
-            },
-            dataType: 'html',
-            async: true,
-            beforeSend: function() {
-                //$('#search-results').html('<span class="preloader"></span>');
-            },
-            success: function(response) {
-                $('#search-results').append(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log(textStatus);
-            }
-        });
-        $.ajax({
-            url: '/index.php?r=search%2Fsearch-profiles',
-            type: 'post',
-            data: {
-                'q' : $('input[name="q"]').val().trim(),
-                'client' : 'facebook',
-                'offset' : 0
-            },
-            dataType: 'html',
-            async: true,
-            beforeSend: function() {
-                //$('#search-results').html('<span class="preloader"></span>');
-            },
-            success: function(response) {
-                $('#search-results').append(response);
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log(textStatus);
-            }
-        });*/
     });
 });
 $(document).on('click', '.show-more', function() {

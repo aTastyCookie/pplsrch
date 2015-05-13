@@ -6,13 +6,18 @@ use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
+
 use app\models\SearchForm;
+use app\models\SearchRequest;
+use app\models\Auth;
+
 use app\components\authclient\clients\PSVKontakte;
 use app\components\authclient\clients\PSFacebook;
 use app\components\authclient\clients\PSTwitter;
 use app\components\authclient\clients\PSGoogleOAuth;
+
 use yii\authclient\OAuthToken;
-use app\models\Auth;
+
 
 class SearchController extends Controller
 {
@@ -25,7 +30,7 @@ class SearchController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'actions' => ['index', 'vk', 'connect', 'auth', 'disconnect', 'search-profiles'],
+                        'actions' => ['index', 'vk', 'connect', 'auth', 'disconnect', 'search-profiles', 'compare-pics'],
                         'roles' => ['@'],
                     ],
                 ]
@@ -41,6 +46,67 @@ class SearchController extends Controller
                 'successCallback' => [$this, 'onAuthSuccessConnect'],
             ],
         ];
+    }
+
+    public function actionComparePics()
+    {
+        $request = Yii::$app->request;
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        if ($request->isPost) {
+            $imagesStr = $request->post('images');
+            $hashesStr = $request->post('hashes');
+
+            $images = explode(',', $imagesStr);
+            $hashes = explode(',', $hashesStr);
+
+            $picsData = array();
+            foreach ($images as $key => $src) {
+                $picsData[] = array(
+                    'src' => $src,
+                    'hash' => $hashes[$key],
+                );
+            }
+
+            $groups = array();
+            foreach ($picsData as $key => $data) {
+                $similarPicsIndexes = $this->getSimilarPicsIndexes($key, $data['src'], $picsData);
+                if (count($similarPicsIndexes)) {
+                    foreach ($similarPicsIndexes as $index) {
+                        $groups[$data['hash']][] = $picsData[$index]['hash'];
+                        unset($picsData[$index]);
+                    }
+                }
+                unset($picsData[$key]);
+            }
+
+            return $groups;
+        }
+    }
+
+    public function getSimilarPicsIndexes($index, $src, $picsData)
+    {
+        $srcImageKey = $this->generateImageKey($src);
+        
+        if (!$srcImageKey) {
+            return FALSE;
+        }
+
+        //$result = array();
+        $similarPicsIndexes = array();
+        foreach ($picsData as $key => $data) {
+            if ($key > $index) {
+                $imageKey = $this->generateImageKey($data['src']);
+                if (!$imageKey) continue;    
+                $similarity = $this->imagediff($srcImageKey, $imageKey);
+                
+                if ($similarity == 1) {
+                    $similarPicsIndexes[] = $key;
+                }
+            }
+        }
+
+        return $similarPicsIndexes;
     }
 
     public function onAuthSuccessConnect($client)
@@ -72,6 +138,8 @@ class SearchController extends Controller
 	public function actionIndex()
     {
         $user = Yii::$app->user->getIdentity();
+        $this->view->params['user'] = $user;
+
         $request = Yii::$app->request;
         $form = new SearchForm();
 
@@ -99,7 +167,7 @@ class SearchController extends Controller
                         $html .= '<div class="client-name">Результаты поиска ' . $result->getClientId() . ':</div>';
                         
                         foreach ($result->getProfiles() as $profile) {
-                            $html .= '<div class="profile">
+                            $html .= '<div id="' . md5($profile['picture']) . '" class="profile">
                                 <div class="top-profile">
                                     <a class="show-more">развернуть</a>
                                     <div class="picture">
@@ -248,8 +316,16 @@ class SearchController extends Controller
                 $client = $collection->getClient($clientId);
                 $client->setAccessToken($accessToken);    
                 $searchResult = $client->searchUsers($queryString, $offset, $limit, $after);
-                if ($searchResult->getProfiles()) {
-                    $html = $this->getFoundProfilesHtml($searchResult->getProfiles());
+
+                $profilesData = $searchResult->getProfiles();
+
+                //var_dump($profilesData[0]['picture']);
+                //$this->generateImageKey($profilesData[0]['picture']);
+                //var_dump(getimagesize($profilesData[0]['picture']));die();
+
+
+                if ($profilesData) {
+                    $html = $this->getFoundProfilesHtml($profilesData);
                 }
                 
                 if ($searchResult->canGetMore()) {
@@ -259,24 +335,44 @@ class SearchController extends Controller
                     }
                     $moreLink .= ' data-client="' . $clientId . '" data-offset="' . $searchResult->getOffset() . '" data-query="' . $queryString . '">GiveMeMore</button>';
                 }
+
+                $searchRequestLog = new SearchRequest([
+                    'user_id' => $user->getId(),
+                    'ip' => $request->userIP,
+                    'ua' => $request->userAgent,
+                    'query' => $queryString,
+                    'result' => serialize($profilesData),
+                    'search_time' => date('Y-m-d H:i:s')
+                ]);
+
+                $searchRequestLog->save();
+
+                return [
+                    'profiles' => isset($html) ? $html : '<p class="error">Поиск не дал результатов</p>',
+                    'more' => isset($moreLink) ? $moreLink : NULL
+                ];
+
             } else {
                 return [
                     'error' => '<p class="error">Ошибка токена. Необходимо обновить</p>'
                 ];
             }             
-        }
-
-        return [
-            'profiles' => isset($html) ? $html : '<p class="error">Поиск не дал результатов</p>',
-            'more' => isset($moreLink) ? $moreLink : NULL
-        ];
+        } 
     }
 
     public function getFoundProfilesHtml($profiles) 
     {
         $html = '';
-        foreach ($profiles as $profile) {
-            $html .= '<div class="profile">
+        $profiles[] = array(
+            'picture' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
+            'name' => 'Виталий Онанко',
+            'picture_big' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
+            'mobile_phone' => NULL,
+            'home_phone' => NULL,
+            'profile_url' => 'sdsdfsd',
+        );
+        foreach ($profiles as $key => $profile) {
+            $html .= '<div id="' . md5($profile['picture'] . $key) . '" class="profile">
                 <div class="top-profile">
                     <a class="show-more">развернуть</a>
                     <div class="picture">
@@ -324,5 +420,90 @@ class SearchController extends Controller
         }
 
         return $auths;
+    }
+
+    public function generateImageKey($src)
+    {
+        $size = @getimagesize($src);
+        
+        if (!$size) {
+            return FALSE;
+        }
+
+        preg_match('#jpeg|png|jpg|gif#', $src, $match);
+        
+        switch ($match[0]) {
+            case 'jpeg':
+                $image = @imagecreatefromjpeg($src);
+                break;
+
+            case 'jpg':
+                $image = @imagecreatefromjpeg($src);
+                break;
+
+            case 'png':
+                $image = @imagecreatefrompng($src);
+                break;
+
+            case 'gif':
+                $image = @imagecreatefromgif($src);
+                break;
+
+            default:
+                $image = FALSE;
+                break;            
+        }
+
+        if (!$image) return FALSE;
+
+        $zone = imagecreate(20, 20);
+        imagecopyresized($zone, $image, 0, 0, 0, 0, 20, 20, $size[0], $size[1]);
+
+        //Будущая маска
+        $colormap = array();
+
+        //Базовый цвет изображения
+        $average = 0;
+
+        //Результат
+        $result = array();
+
+        for ($x = 0; $x < 20; $x++) {
+            for ($y = 0; $y < 20; $y++) {
+                $color = imagecolorat($zone, $x, $y);
+                $color = imagecolorsforindex($zone, $color);
+
+                //Вычисление яркости было подсказано хабраюзером Ryotsuke
+                $colormap[$x][$y]= 0.212671 * $color['red'] + 0.715160 * $color['green'] + 0.072169 * $color['blue'];
+                $average += $colormap[$x][$y];
+            }
+        }
+
+        //Базовый цвет
+        $average /= 400;
+
+        //Генерируем ключ строку
+        for ($x = 0; $x < 20; $x++)
+            for ($y = 0; $y < 20; $y++)
+                $result[] = ($x < 10 ? $x : chr($x + 97)) . ($y < 10 ? $y : chr($y + 97)) . round(2*$colormap[$x][$y]/$average);
+
+        //Возвращаем ключ
+        return join(' ',$result);
+    }
+
+    public function imagediff($image, $desc)
+    {
+        $image = explode(' ', $image);
+        $desc = explode(' ', $desc);
+
+        $result = 0;
+
+        foreach ($image as $bit) {
+            if(in_array($bit,$desc)) {
+                $result++;
+            }
+        }
+
+        return $result/((count($image) + count($desc))/2);
     }
 }
