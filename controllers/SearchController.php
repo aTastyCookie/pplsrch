@@ -69,6 +69,8 @@ class SearchController extends Controller
             }
 
             $groups = array();
+            
+            //Yii::info('Начали сравнивать', 'marks');
             foreach ($picsData as $key => $data) {
                 $similarPicsIndexes = $this->getSimilarPicsIndexes($key, $data['src'], $picsData);
                 if (count($similarPicsIndexes)) {
@@ -112,6 +114,7 @@ class SearchController extends Controller
     public function onAuthSuccessConnect($client)
     {
         $user = Yii::$app->user->getIdentity();
+        $attributes = $client->getUserAttributes();
         $authToken = $client->getAccessToken();
 
         $authExists = Auth::find()->where([
@@ -297,7 +300,7 @@ class SearchController extends Controller
 
         $request = Yii::$app->getRequest();
 
-        $limit = 20;
+        $limit = 5;
         $clientId = $request->post('client');
         $offset = $request->post('offset');
         $queryString = $request->post('q');
@@ -323,6 +326,14 @@ class SearchController extends Controller
                 //var_dump($profilesData[0]['picture']);
                 //$this->generateImageKey($profilesData[0]['picture']);
                 //var_dump(getimagesize($profilesData[0]['picture']));die();
+                $profilesData[] = array(
+                    'picture' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
+                    'name' => 'Виталий Онанко ' . $clientId,
+                    'picture_big' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
+                    'mobile_phone' => NULL,
+                    'home_phone' => NULL,
+                    'profile_url' => 'Профиль ' . $clientId,
+                );
 
 
                 if ($profilesData) {
@@ -364,14 +375,6 @@ class SearchController extends Controller
     public function getFoundProfilesHtml($profiles) 
     {
         $html = '';
-        $profiles[] = array(
-            'picture' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
-            'name' => 'Виталий Онанко',
-            'picture_big' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
-            'mobile_phone' => NULL,
-            'home_phone' => NULL,
-            'profile_url' => 'sdsdfsd',
-        );
         foreach ($profiles as $key => $profile) {
             $html .= '<div id="' . md5($profile['picture'] . $key) . '" class="profile">
                 <div class="top-profile">
@@ -425,6 +428,7 @@ class SearchController extends Controller
 
     public function generateImageKey($src)
     {
+        Yii::info('Изображение ' . $src, 'marks');
         $size = @getimagesize($src);
         
         if (!$size) {
@@ -441,6 +445,10 @@ class SearchController extends Controller
             case 'jpg':
                 $image = @imagecreatefromjpeg($src);
                 break;
+                if (preg_match('|\?sz=50|', $src)) {
+                    $image = @imagecreatefrompng($src);
+                    break;
+                }
 
             case 'png':
                 $image = @imagecreatefrompng($src);
@@ -466,6 +474,7 @@ class SearchController extends Controller
         //Базовый цвет изображения
         $average = 0;
 
+
         //Результат
         $result = array();
 
@@ -482,6 +491,7 @@ class SearchController extends Controller
 
         //Базовый цвет
         $average /= 400;
+        if (!$average) $average = 0.0000001;
 
         //Генерируем ключ строку
         for ($x = 0; $x < 20; $x++)
@@ -494,6 +504,7 @@ class SearchController extends Controller
 
     public function imagediff($image, $desc)
     {
+        Yii::info('Сравниваем...', 'marks');
         $image = explode(' ', $image);
         $desc = explode(' ', $desc);
 
@@ -504,6 +515,8 @@ class SearchController extends Controller
                 $result++;
             }
         }
+
+        //Yii::info('Конец сравнивания', 'marks');
 
         return $result/((count($image) + count($desc))/2);
     }
