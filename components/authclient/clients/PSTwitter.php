@@ -20,10 +20,11 @@ class PSTwitter extends Twitter
     protected function getNormalizeSearchResultMap()
     {
         return [
-            'picture' => 'profile_image_url',
+            'picture_small' => 'profile_image_url',
             'picture_big' => function($data) {
                 return preg_replace('|_normal|', '', $data['profile_image_url']);
             },
+            'default_picture' => 'default_profile_image',
             'profile_url' => function($data) {
                 return 'https://twitter.com/' . $data['screen_name'];
             },

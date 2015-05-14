@@ -89,25 +89,25 @@ a.desc:after {
     padding: 10px 20px;
     margin: 0 0 15px 0;
 }
-.preloader-vk {
+.preloader-vkontakte {
     display: block;
     width: 40px;
     height: 40px;
     background: url('../img/preloader-vk.gif') no-repeat;
 }
-.preloader-fb {
+.preloader-facebook {
     display: block;
     width: 40px;
     height: 40px;
     background: url('../img/preloader-fb.gif') no-repeat;
 }
-.preloader-tw {
+.preloader-twitter {
     display: block;
     width: 40px;
     height: 40px;
     background: url('../img/preloader-tw.gif') no-repeat;
 }
-.preloader-gg {
+.preloader-google {
     display: block;
     width: 40px;
     height: 40px;
@@ -147,4 +147,8 @@ a.desc:after {
 .error {
     font-weight: bold;
     color: red;
+}
+
+.profile-group {
+    margin: 50px 0 50px 40px;
 }

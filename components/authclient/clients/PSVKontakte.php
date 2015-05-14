@@ -15,8 +15,11 @@ class PSVKontakte extends VKontakte
             'name' => function ($data) {
                 return $data['first_name'] . ' ' . $data['last_name'];
             },
-            'picture' => 'photo_50',
+            'picture_small' => 'photo_50',
             'picture_big' => 'photo_200_orig',
+            'default_picture' => function($data) {
+                return preg_match('|vk\.com\/images\/.*_50\.png|', $data['photo_50']) ? true : false; 
+            },
             'mobile_phone' => function($data) {
                 return (isset($data['mobile_phone']) && $data['mobile_phone']) ? $data['mobile_phone'] : NULL;
             },

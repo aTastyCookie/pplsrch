@@ -3,6 +3,7 @@
 namespace app\components\authclient\clients;
 
 use yii\authclient\clients\GoogleOAuth;
+use app\components\SearchResult;
 
 class PSGoogleOAuth extends GoogleOAuth
 {
@@ -23,24 +24,59 @@ class PSGoogleOAuth extends GoogleOAuth
     {
         return [
             'name' => 'displayName',
-            'picture' => function($attributes) {
-                return $attributes['image']['url'];
+            'picture_small' => function($profile) {
+                return $profile['image']['url'];
+            },
+            'default_picture' => function($profile) {
+                return $profile['image']['url']['isDefault'];
+            },
+            'picture_big' => function($profile) {
+                return preg_replace('|sz=50|', 'sz=200', $profile['image']['url']);
+            },
+            'profile_url' => 'url',
+            'mobile_phone' => function() {
+                return NULL;
+            },
+            'home_phone' => function() {
+                return NULL;
             }
         ];
     }
 
-    public function searchUsers($query)
+    public function searchUsers($queryString, $offset, $limit, $after)
     {
-        $data = $this->api('people', 'GET', ['query' => $query, 'maxResults' => '20']);
+        $queryParams = [
+            'query' => $queryString,
+            'maxResults' => $limit
+        ];
 
-        $result = $this->normalizeSearchResult($data['items']);
+        if ($offset) {
+            $queryParams['pageToken'] = $offset;
+        }
 
-        return $result;
+        $search = $this->api('people', 'GET', $queryParams);
+        $queryItemsCount = count($search['items']);
+
+        $profilesData = array();
+        foreach ($search['items'] as $profile) {
+            $profilesData[] = $this->getProfileData($profile['id']); 
+        }
+
+        $result = $this->normalizeSearchResult($profilesData);
+
+        $searchResult = new SearchResult($this->getId(), $result);
+
+        if ($queryItemsCount == $limit) {
+            $searchResult->setOffset($search['nextPageToken']);
+        } else {
+            $searchResult->setOffset(FALSE);
+        }
+
+        return $searchResult;
     }
 
     protected function normalizeSearchResult($data) 
     {
-        unset($data[0]);
         foreach ($data as &$profile) {
             foreach ($this->getNormalizeSearchResultMap() as $normalizedName => $actualName) {
                 if (is_scalar($actualName)) {
@@ -71,6 +107,15 @@ class PSGoogleOAuth extends GoogleOAuth
                 }
             }
         }
+
+        return $data;
+    }
+
+    public function getProfileData($userId)
+    {
+        $data = $this->api('people/' . $userId, 'GET', ['fields' => 'name,displayName,url,birthday,gender,image,currentLocation,nickname,aboutMe,relationshipStatus,urls,organizations,placesLived,tagline,emails,isPlusUser,braggingRights,plusOneCount,circledByCount,verified,cover,language,ageRange']);
+
+        //echo '<pre>'; var_dump($data); echo '</pre>';die();
 
         return $data;
     }

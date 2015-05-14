@@ -73,7 +73,7 @@ class SearchController extends Controller
             //Yii::info('Начали сравнивать', 'marks');
             foreach ($picsData as $key => $data) {
                 $similarPicsIndexes = $this->getSimilarPicsIndexes($key, $data['src'], $picsData);
-                if (count($similarPicsIndexes)) {
+                if ($similarPicsIndexes && count($similarPicsIndexes)) {
                     foreach ($similarPicsIndexes as $index) {
                         $groups[$data['hash']][] = $picsData[$index]['hash'];
                         unset($picsData[$index]);
@@ -101,8 +101,9 @@ class SearchController extends Controller
                 $imageKey = $this->generateImageKey($data['src']);
                 if (!$imageKey) continue;    
                 $similarity = $this->imagediff($srcImageKey, $imageKey);
-                
-                if ($similarity == 1) {
+                Yii::info('Сравниваем ' . $src . ' и ' . $data['src'], 'marks');
+                Yii::info('Похожесть: ' . $similarity, 'marks');
+                if ($similarity > 0.4) {
                     $similarPicsIndexes[] = $key;
                 }
             }
@@ -248,33 +249,6 @@ class SearchController extends Controller
         }
     }
 
-    public function search($auths, $query)
-    {
-        $collection = Yii::$app->get('authClientCollection');
-        
-        $results = array();
-        foreach ($auths as $auth) {
-            $clientId = $auth->getSource();
-
-            if ($clientId == 'linkedin') continue;
-            
-            if ($collection->hasClient($clientId)) {
-
-                $client = $collection->getClient($clientId);
-                
-                $authToken = $auth->getAuthToken();
-                if ($authToken->getIsExpired()) continue;
-                $client->setAccessToken($authToken);
-
-                $this->runAction('search-profiles', ['clientId' => $clientId, 'queryString' => $query]);
-
-                //$results[] = $this->searchInsideClient($client, $query);
-            }
-        }     
-        
-        return $results;
-    }
-
     public function searchInsideClient($client, $query)
     {
         if (is_object($client)) {
@@ -327,7 +301,8 @@ class SearchController extends Controller
                 //$this->generateImageKey($profilesData[0]['picture']);
                 //var_dump(getimagesize($profilesData[0]['picture']));die();
                 $profilesData[] = array(
-                    'picture' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
+                    'picture_small' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
+                    'default_picture' => false,
                     'name' => 'Виталий Онанко ' . $clientId,
                     'picture_big' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
                     'mobile_phone' => NULL,
@@ -376,11 +351,11 @@ class SearchController extends Controller
     {
         $html = '';
         foreach ($profiles as $key => $profile) {
-            $html .= '<div id="' . md5($profile['picture'] . $key) . '" class="profile">
+            $html .= '<div id="' . md5($profile['picture_small'] . $key) . '" class="profile">
                 <div class="top-profile">
                     <a class="show-more">развернуть</a>
                     <div class="picture">
-                        <img src="' . $profile['picture'] . '" />
+                        <img' . ($profile['default_picture'] ? '' : ' class="non-default"') . ' src="' . $profile['picture_small'] . '" />
                     </div>
                     <div class="name">' . $profile['name'] . '</div>
                 </div>
@@ -428,7 +403,6 @@ class SearchController extends Controller
 
     public function generateImageKey($src)
     {
-        Yii::info('Изображение ' . $src, 'marks');
         $size = @getimagesize($src);
         
         if (!$size) {
@@ -519,5 +493,5 @@ class SearchController extends Controller
         //Yii::info('Конец сравнивания', 'marks');
 
         return $result/((count($image) + count($desc))/2);
-    }
+    } 
 }
