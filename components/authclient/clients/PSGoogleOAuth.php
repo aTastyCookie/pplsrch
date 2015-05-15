@@ -28,7 +28,7 @@ class PSGoogleOAuth extends GoogleOAuth
                 return $profile['image']['url'];
             },
             'default_picture' => function($profile) {
-                return $profile['image']['url']['isDefault'];
+                return $profile['image']['isDefault'];
             },
             'picture_big' => function($profile) {
                 return preg_replace('|sz=50|', 'sz=200', $profile['image']['url']);

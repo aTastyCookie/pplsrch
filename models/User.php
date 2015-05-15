@@ -94,4 +94,14 @@ class User extends ActiveRecord implements IdentityInterface
 
         return $auths;
     }
+
+    public function getSettingsResultsMax()
+    {
+        return $this->settings_results_max;
+    }
+
+    public function setSettingsResultsMax($resultsMax)
+    {
+        return $this->settings_results_max = $resultsMax;
+    }
 }

@@ -54,6 +54,7 @@ function compare() {
                 composeProfileGroup(key, response[key]);
             }
             alert('Сравнение окончено');
+            $('.compare-pics').remove();
         },
         error: function() {
             alert('Ошибка!');
@@ -91,6 +92,14 @@ function composeProfileGroup(key, data) {
     $('#search-results').prepend($group);
 }
 
+function showCompareButton() {
+    var $button = $('<button />', {
+        'class': 'btn btn-primary compare-pics',
+        text: 'Сравнить аватарки'
+    });
+    $('#search-results').prepend($button);
+}
+
 
 
 
@@ -98,8 +107,9 @@ $(document).ready(function() {
 
     var requestCallback = new MyRequestsCompleted({
         numRequest: $('.search-block').length,
-        singleCallback: function(){
-            compare();
+        singleCallback: function() {
+            showCompareButton();
+            //compare();
         }
     });
 
@@ -159,7 +169,41 @@ $(document).ready(function() {
         });
     });
 });
+
 $(document).on('click', '.show-more', function() {
     $profile = $(this).parents('.profile');
     $profile.find('.profile-more-data').slideToggle();
+});
+
+$(document).on('click', '.compare-pics', function(e) {
+    e.preventDefault();
+    compare();
+});
+
+$(document).on('click', '.get-more', function() {
+    $block = $(this).parents('.search-block');
+    clientId = $block.attr('id');
+    $.ajax({
+        url: '/index.php?r=search%2Fsearch-profiles',
+        type: 'post',
+        data: {
+            'q' : $(this).attr('data-query'),
+            'client' : $(this).attr('data-client'),
+            'offset' : $(this).attr('data-offset'),
+            'after': $(this).attr('data-after'),
+        },
+        dataType: 'json',
+        async: true,
+        beforeSend: function() {
+            $block.find('.more-wrap').html('<span class="preloader-' + clientId + '"></span>');
+        },
+        success: function(response) {
+            $block.find('.profiles').append(response.profiles);
+            if (response.more) {    
+                $block.find('.more-wrap').html(response.more);    
+            } else {
+                $block.find('.more-wrap').remove();
+            }    
+        }
+    });
 });

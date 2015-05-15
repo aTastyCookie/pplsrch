@@ -274,7 +274,8 @@ class SearchController extends Controller
 
         $request = Yii::$app->getRequest();
 
-        $limit = 5;
+        $limit = $user->getSettingsResultsMax();
+
         $clientId = $request->post('client');
         $offset = $request->post('offset');
         $queryString = $request->post('q');
@@ -297,9 +298,6 @@ class SearchController extends Controller
 
                 $profilesData = $searchResult->getProfiles();
 
-                //var_dump($profilesData[0]['picture']);
-                //$this->generateImageKey($profilesData[0]['picture']);
-                //var_dump(getimagesize($profilesData[0]['picture']));die();
                 $profilesData[] = array(
                     'picture_small' => 'http://cs319821.vk.me/v319821463/6a66/QxyKYWJSWSo.jpg',
                     'default_picture' => false,
@@ -409,7 +407,7 @@ class SearchController extends Controller
             return FALSE;
         }
 
-        preg_match('#jpeg|png|jpg|gif#', $src, $match);
+        preg_match('#jpeg|png|jpg|gif#i', $src, $match);
         
         switch ($match[0]) {
             case 'jpeg':

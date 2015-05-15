@@ -61,8 +61,9 @@ SearchAsset::register($this);
             <section class="sidebar">
                 <!-- Sidebar user panel -->
                 <ul class="sidebar-menu">
-                    <li><a href="<?= Url::toRoute(['index']); ?>">Search</a></li>
-                    <li><a href="<?= Url::toRoute(['connect']); ?>">Connect</a></li>
+                    <li><a href="<?= Url::toRoute(['search/index']); ?>">Search</a></li>
+                    <li><a href="<?= Url::toRoute(['search/connect']); ?>">Connect</a></li>
+                    <li><a href="<?= Url::toRoute(['settings/index']); ?>">Settings</a></li>
                 </ul>
             </section>
             <!-- /.sidebar -->
